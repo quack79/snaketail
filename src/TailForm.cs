@@ -929,7 +929,9 @@ namespace SnakeTail
             {
                 if (text == null)
                 {
-                    if (MainForm.Instance.ActiveMdiChild == this)
+                    // While loading before the form is shown, our own status strip isn't visible yet and the
+                    // "Loading file..." text went to the main window, so clear it there even though we aren't active yet
+                    if (MainForm.Instance.ActiveMdiChild == this || !Visible)
                         MainForm.Instance.SetStatusBar(Paused ? "Paused" : "Ready", progressValue, progressMax);
                 }
                 else
@@ -1666,22 +1668,28 @@ namespace SnakeTail
                 }
             }
 
-            // Set the background color
+            // Pick the colors locally: assigning e.SubItem.BackColor/ForeColor invalidates the whole ListView,
+            // which made every paint queue another paint (endless repaint loop, high CPU)
+            Color backColor;
+            Color foreColor;
             if (e.Item.Selected)
             {
-                e.SubItem.BackColor = SystemColors.Highlight;
-                e.SubItem.ForeColor = highlightColor.HasValue
+                backColor = SystemColors.Highlight;
+                foreColor = highlightColor.HasValue
                     ? Color.FromArgb(SystemColors.Highlight.A, (SystemColors.Highlight.R + 128) % 256, (SystemColors.Highlight.G + 128) % 256, (SystemColors.Highlight.B + 128) % 256)
                     : SystemColors.HighlightText;
             }
             else
             {
-                e.SubItem.BackColor = e.Item.ListView.BackColor;
-                e.SubItem.ForeColor = e.Item.ListView.ForeColor;
+                backColor = e.Item.ListView.BackColor;
+                foreColor = e.Item.ListView.ForeColor;
             }
 
             // Draw the background
-            e.DrawBackground();
+            using (SolidBrush backBrush = new SolidBrush(backColor))
+            {
+                e.Graphics.FillRectangle(backBrush, e.Bounds);
+            }
             e.DrawFocusRectangle(e.Bounds);
 
             // If highlighted, draw a color block at the far left of the line
@@ -1708,11 +1716,11 @@ namespace SnakeTail
             // If there is a keyword highlight and it isn't a bookmark, draw the highlighted text
             if (highlightColor.HasValue && !string.IsNullOrEmpty(highlightKeyword) && !isBookmark && !e.Item.Selected)
             {
-                DrawTextWithHighlight(e.Graphics, text, e.Item.ListView.Font, textBounds, e.SubItem.ForeColor, highlightColor.Value, highlightKeyword, flags);
+                DrawTextWithHighlight(e.Graphics, text, e.Item.ListView.Font, textBounds, foreColor, highlightColor.Value, highlightKeyword, flags);
             }
             else
             {
-                TextRenderer.DrawText(e.Graphics, text, e.Item.ListView.Font, textBounds, e.SubItem.ForeColor, flags);
+                TextRenderer.DrawText(e.Graphics, text, e.Item.ListView.Font, textBounds, foreColor, flags);
             }
 
             // In-line selection highlight: draw the selection background and text over the selected text
