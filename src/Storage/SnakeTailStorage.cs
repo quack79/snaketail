@@ -30,6 +30,7 @@ namespace SnakeTail.Storage
     public sealed class SnakeTailStorage : IDisposable
     {
         private const string KeyDefaultSession = "DefaultSession";
+        private const string KeyThemeMode = "ThemeMode";
 
         private readonly string _dbPath;
         private object _connection;
@@ -234,6 +235,23 @@ namespace SnakeTail.Storage
 
         #endregion
 
+        #region Theme (ThemeMode)
+
+        public void SaveThemeMode(ThemeMode mode)
+        {
+            SetSetting(KeyThemeMode, mode.ToString());
+        }
+
+        /// <summary>
+        /// Loads the saved theme mode; Light when nothing has been saved
+        /// </summary>
+        public ThemeMode LoadThemeMode()
+        {
+            return Theme.ParseMode(GetSetting(KeyThemeMode));
+        }
+
+        #endregion
+
         #region Internal: SQLite and AppSettings
 
         private string GetSetting(string key)
@@ -371,13 +389,13 @@ namespace SnakeTail.Storage
                 if (command == null) return;
                 if (parameters != null && parameters.Length > 0)
                 {
-                    var paramCollection = _sqliteCommandType.GetMethod("Parameters")?.Invoke(command, null);
+                    var paramCollection = (command as System.Data.IDbCommand)?.Parameters;
                     var addWithValue = paramCollection?.GetType().GetMethod("AddWithValue");
                     if (addWithValue != null)
                         for (int i = 0; i < parameters.Length; i += 2)
                             addWithValue.Invoke(paramCollection, new object[] { parameters[i], parameters[i + 1] });
                 }
-                _sqliteCommandType.GetMethod("ExecuteNonQuery")?.Invoke(command, null);
+                _sqliteCommandType.GetMethod("ExecuteNonQuery", Type.EmptyTypes)?.Invoke(command, null);
             }
             catch { }
             finally
@@ -396,13 +414,13 @@ namespace SnakeTail.Storage
                 if (command == null) return null;
                 if (parameters != null && parameters.Length > 0)
                 {
-                    var paramCollection = _sqliteCommandType.GetMethod("Parameters")?.Invoke(command, null);
+                    var paramCollection = (command as System.Data.IDbCommand)?.Parameters;
                     var addWithValue = paramCollection?.GetType().GetMethod("AddWithValue");
                     if (addWithValue != null)
                         for (int i = 0; i < parameters.Length; i += 2)
                             addWithValue.Invoke(paramCollection, new object[] { parameters[i], parameters[i + 1] });
                 }
-                return _sqliteCommandType.GetMethod("ExecuteReader")?.Invoke(command, null);
+                return _sqliteCommandType.GetMethod("ExecuteReader", Type.EmptyTypes)?.Invoke(command, null);
             }
             catch { }
             return null;

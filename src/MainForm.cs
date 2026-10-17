@@ -81,6 +81,30 @@ namespace SnakeTail
                 MessageBox.Show(this, "Could not initialize the SQLite database; the recently opened files list will not be saved.\n\nError: " + ex.Message,
                     "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
+
+            Theme.SetMode(_storage != null ? _storage.LoadThemeMode() : ThemeMode.Light);
+            UpdateThemeMenu();
+            Theme.Apply(this);
+        }
+
+        private void UpdateThemeMenu()
+        {
+            lightThemeToolStripMenuItem.Checked = Theme.Mode == ThemeMode.Light;
+            darkThemeToolStripMenuItem.Checked = Theme.Mode == ThemeMode.Dark;
+            systemThemeToolStripMenuItem.Checked = Theme.Mode == ThemeMode.System;
+        }
+
+        private void themeToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            ThemeMode mode = ThemeMode.Light;
+            if (sender == darkThemeToolStripMenuItem)
+                mode = ThemeMode.Dark;
+            else if (sender == systemThemeToolStripMenuItem)
+                mode = ThemeMode.System;
+
+            Theme.SetMode(mode);
+            _storage?.SaveThemeMode(mode);
+            UpdateThemeMenu();
         }
 
         private void UpdateTitle()
@@ -769,7 +793,7 @@ namespace SnakeTail
             bool selected = (e.State & DrawItemState.Selected) == DrawItemState.Selected;
             bool changed = !selected && IsTabChanged(tabPage);
             Rectangle bounds = e.Bounds;
-            Color backgroundColor = selected ? SystemColors.ControlLightLight : SystemColors.Control;
+            Color backgroundColor = Theme.Map(selected ? SystemColors.ControlLightLight : SystemColors.Control);
 
             using (SolidBrush backgroundBrush = new SolidBrush(backgroundColor))
             {
@@ -798,7 +822,7 @@ namespace SnakeTail
                 tabPage.Text,
                 _MDITabControl.Font,
                 textRect,
-                SystemColors.ControlText,
+                Theme.Map(SystemColors.ControlText),
                 TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.EndEllipsis | TextFormatFlags.NoPrefix);
 
             if (changed)

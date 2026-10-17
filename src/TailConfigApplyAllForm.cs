@@ -27,6 +27,7 @@ namespace SnakeTail
         public TailConfigApplyAllForm()
         {
             InitializeComponent();
+            Theme.Apply(this);
         }
     }
 }

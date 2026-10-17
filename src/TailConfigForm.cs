@@ -32,6 +32,7 @@ namespace SnakeTail
             InitializeComponent();
             TailFileConfig = tailFileConfig;
             _displayFileTab = displayFileTab;
+            Theme.Apply(this);
         }
 
         private void UpdateKeywordListItem(TailKeywordConfig keyword, ref ListViewItem lvi)

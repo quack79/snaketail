@@ -137,6 +137,7 @@ namespace SnakeTail
             InitializeComponent();
             _findNextBtn.Enabled = false;
             _resultLabel.ForeColor = Color.Firebrick;
+            Theme.Apply(this);
         }
 
         static class NativeMethods

@@ -43,6 +43,7 @@ namespace SnakeTail
         {
             InitializeComponent();
             Icon = Properties.Resources.LogIcon;
+            Theme.Apply(this);
         }
 
         public void LoadFile(string eventLogFile)
@@ -56,8 +57,8 @@ namespace SnakeTail
 
         public void SaveConfig(TailFileConfig tailConfig)
         {
-            tailConfig.BackColor = ColorTranslator.ToHtml(_eventListView.BackColor);
-            tailConfig.TextColor = ColorTranslator.ToHtml(_eventListView.ForeColor);
+            tailConfig.BackColor = ColorTranslator.ToHtml(Theme.UnthemedBackColor(_eventListView));
+            tailConfig.TextColor = ColorTranslator.ToHtml(Theme.UnthemedForeColor(_eventListView));
 
             tailConfig.FormFont = _eventListView.Font;
             tailConfig.FilePath = _eventLog.Log;
@@ -127,6 +128,7 @@ namespace SnakeTail
                 _eventListView.BackColor = tailConfig.FormBackColor.Value;
             if (tailConfig.FormTextColor != null)
                 _eventListView.ForeColor = tailConfig.FormTextColor.Value;
+            Theme.Apply(_eventListView);
 
             if (tailConfig.FormFont != null)
             {

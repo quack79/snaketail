@@ -58,6 +58,7 @@ namespace SnakeTail
             CrashReport.Items.Add(new ApplicationReport());
             CrashReport.Items.Add(new SystemReport());
             CrashReport.Items.Add(new MemoryPerformanceReport());
+            Theme.Apply(this);
         }
 
         private void ThreadExceptionDialogEx_Load(object sender, EventArgs e)

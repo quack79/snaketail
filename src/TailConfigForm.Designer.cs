@@ -671,14 +671,14 @@ namespace SnakeTail
             this._applyAllBtn.DialogResult = System.Windows.Forms.DialogResult.Retry;
             this._applyAllBtn.Location = new System.Drawing.Point(10, 245);
             this._applyAllBtn.Name = "_applyAllBtn";
-            this._applyAllBtn.Size = new System.Drawing.Size(67, 23);
+            this._applyAllBtn.Size = new System.Drawing.Size(75, 23);
             this._applyAllBtn.TabIndex = 16;
             this._applyAllBtn.Text = "Apply to All";
             this._applyAllBtn.UseVisualStyleBackColor = true;
             // 
             // _saveDefaultBtn
             // 
-            this._saveDefaultBtn.Location = new System.Drawing.Point(83, 245);
+            this._saveDefaultBtn.Location = new System.Drawing.Point(91, 245);
             this._saveDefaultBtn.Name = "_saveDefaultBtn";
             this._saveDefaultBtn.Size = new System.Drawing.Size(89, 23);
             this._saveDefaultBtn.TabIndex = 17;

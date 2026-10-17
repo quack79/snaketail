@@ -7,6 +7,7 @@ namespace SnakeTail
         public MonitorRulesForm()
         {
             InitializeComponent();
+            Theme.Apply(this);
         }
 
         private void InitializeComponent()

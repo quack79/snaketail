@@ -73,6 +73,10 @@ namespace SnakeTail
             this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.editToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.noActiveWindowToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.viewToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.lightThemeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.darkThemeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.systemThemeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.windowToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.enableTabsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.cascadeWindowsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -131,6 +135,7 @@ namespace SnakeTail
             this._mainMenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.fileToolStripMenuItem,
             this.editToolStripMenuItem,
+            this.viewToolStripMenuItem,
             this.windowToolStripMenuItem,
             this.helpToolStripMenuItem});
             this._mainMenu.Location = new System.Drawing.Point(0, 0);
@@ -288,6 +293,37 @@ namespace SnakeTail
             this.noActiveWindowToolStripMenuItem.Name = "noActiveWindowToolStripMenuItem";
             this.noActiveWindowToolStripMenuItem.Size = new System.Drawing.Size(169, 22);
             this.noActiveWindowToolStripMenuItem.Text = "No active window";
+            //
+            // viewToolStripMenuItem
+            //
+            this.viewToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.lightThemeToolStripMenuItem,
+            this.darkThemeToolStripMenuItem,
+            this.systemThemeToolStripMenuItem});
+            this.viewToolStripMenuItem.Name = "viewToolStripMenuItem";
+            this.viewToolStripMenuItem.Size = new System.Drawing.Size(44, 20);
+            this.viewToolStripMenuItem.Text = "&View";
+            //
+            // lightThemeToolStripMenuItem
+            //
+            this.lightThemeToolStripMenuItem.Name = "lightThemeToolStripMenuItem";
+            this.lightThemeToolStripMenuItem.Size = new System.Drawing.Size(190, 22);
+            this.lightThemeToolStripMenuItem.Text = "&Light Theme";
+            this.lightThemeToolStripMenuItem.Click += new System.EventHandler(this.themeToolStripMenuItem_Click);
+            //
+            // darkThemeToolStripMenuItem
+            //
+            this.darkThemeToolStripMenuItem.Name = "darkThemeToolStripMenuItem";
+            this.darkThemeToolStripMenuItem.Size = new System.Drawing.Size(190, 22);
+            this.darkThemeToolStripMenuItem.Text = "&Dark Theme";
+            this.darkThemeToolStripMenuItem.Click += new System.EventHandler(this.themeToolStripMenuItem_Click);
+            //
+            // systemThemeToolStripMenuItem
+            //
+            this.systemThemeToolStripMenuItem.Name = "systemThemeToolStripMenuItem";
+            this.systemThemeToolStripMenuItem.Size = new System.Drawing.Size(190, 22);
+            this.systemThemeToolStripMenuItem.Text = "Follow &System Theme";
+            this.systemThemeToolStripMenuItem.Click += new System.EventHandler(this.themeToolStripMenuItem_Click);
             //
             // windowToolStripMenuItem
             //
@@ -489,6 +525,10 @@ namespace SnakeTail
         private System.Windows.Forms.ToolStripMenuItem fileToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem openToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem openWildcardMonitorToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem viewToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem lightThemeToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem darkThemeToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem systemThemeToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem windowToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem enableTabsToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem cascadeWindowsToolStripMenuItem;

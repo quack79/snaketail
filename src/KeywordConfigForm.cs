@@ -41,6 +41,7 @@ namespace SnakeTail
                 TailKeywordConfig.FormBackColor = Color.Red;
                 TailKeywordConfig.FormTextColor = Color.White;
             }
+            Theme.Apply(this);
         }
 
         private void KeywordConfigForm_Load(object sender, EventArgs e)

@@ -36,6 +36,7 @@ namespace SnakeTail
                 if (logfile == "Application")
                     _listView.SelectedIndices.Add(_listView.Items.Count-1);
             }
+            Theme.Apply(this);
         }
 
         public string EventLogFile

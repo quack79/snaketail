@@ -45,6 +45,7 @@ namespace SnakeTail
 
             _argParamCmb.DataSource = _paramBindingSource;
             _initDirParamCmb.DataSource = _paramBindingSource;
+            Theme.Apply(this);
         }
 
         private void ExternalToolConfigForm_Load(object sender, EventArgs e)

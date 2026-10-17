@@ -138,6 +138,7 @@ namespace SnakeTail
             Icon = Properties.Resources.LogIcon;
             InitializeEncodingComboBox();
             InitializeKeywordToolStrip();
+            Theme.Apply(this);
         }
 
         private void InitializeKeywordToolStrip()
@@ -531,6 +532,8 @@ namespace SnakeTail
                 _tailListView.BackColor = tailConfig.FormBackColor.Value;
             if (tailConfig.FormTextColor != null)
                 _tailListView.ForeColor = tailConfig.FormTextColor.Value;
+            // Default (system) colors follow the theme, user-chosen colors are kept as they are
+            Theme.Apply(_tailListView);
 
             if (tailConfig.FormFont != null)
                 _tailListView.Font = tailConfig.FormFont;
@@ -1065,8 +1068,8 @@ namespace SnakeTail
         public void SaveConfig(TailFileConfig tailConfig)
         {
             tailConfig.FormFont = _tailListView.Font;
-            tailConfig.FormBackColor = _tailListView.BackColor;
-            tailConfig.FormTextColor = _tailListView.ForeColor;
+            tailConfig.FormBackColor = Theme.UnthemedBackColor(_tailListView);
+            tailConfig.FormTextColor = Theme.UnthemedForeColor(_tailListView);
 
             tailConfig.FormBookmarkBackColor = _bookmarkBackColor;
             tailConfig.FormBookmarkTextColor = _bookmarkTextColor;
