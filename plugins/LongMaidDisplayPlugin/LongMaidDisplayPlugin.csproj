@@ -5,9 +5,9 @@
     <Nullable>enable</Nullable>
     <AssemblyName>LongMaidDisplayPlugin</AssemblyName>
     <RootNamespace>LongMaidDisplayPlugin</RootNamespace>
-    <!-- 关闭目标框架后缀，保持插件输出目录稳定 -->
+    <!-- Disable the target framework suffix to keep the plugin output directory stable -->
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
-    <!-- 排除历史本地 obj/bin，避免迁移到 .temp 后重复编译 -->
+    <!-- Exclude legacy local obj/bin to avoid compiling twice after the move to .temp -->
     <DefaultItemExcludes>$(DefaultItemExcludes);obj\**;bin\**</DefaultItemExcludes>
   </PropertyGroup>
 

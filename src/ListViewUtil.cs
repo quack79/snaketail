@@ -76,7 +76,7 @@ namespace SnakeTail
 
         static ListViewUtil()
         {
-            // .NET 8+ 可能重命名或移除了 internal 字段，找不到时 SetVirtualListSizeWithoutRefresh 会回退到 VirtualListSize 属性
+            // .NET 8+ may have renamed or removed the internal field; when it can't be found, SetVirtualListSizeWithoutRefresh falls back to the VirtualListSize property
             listViewVirtualListSizeField = typeof(ListView).GetField("virtualListSize", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
         }
 

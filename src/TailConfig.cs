@@ -170,14 +170,14 @@ namespace SnakeTail
 
     public class TailFileConfig
     {
-        // 新建配置默认值：避免轮询参数缺失时退化为高频空转。
+        // Defaults for new configs: avoid degrading into high-frequency busy polling when polling parameters are missing.
         public const int DefaultFileCacheSize = 1000;
         public const int DefaultFileCheckIntervalSeconds = 10;
         public const int DefaultFileChangeCheckIntervalMs = 500;
 
         public TailFileConfig()
         {
-            // 仅在配置未显式赋值时生效，兼顾旧会话反序列化。
+            // Only takes effect when the config doesn't set a value explicitly, which also covers deserializing old sessions.
             FileCacheSize = DefaultFileCacheSize;
             FileCheckInterval = DefaultFileCheckIntervalSeconds;
             FileChangeCheckInterval = DefaultFileChangeCheckIntervalMs;
@@ -218,7 +218,7 @@ namespace SnakeTail
         [XmlArrayItem("Plugin")]
         public List<string> EnabledDisplayPlugins { get; set; }
 
-        // 快速关键字相关配置
+        // Quick keyword settings
         public string QuickKeyword { get; set; }
         public bool QuickHighlight { get; set; }
         public string QuickHighlightColor { get; set; }   // ColorTranslator

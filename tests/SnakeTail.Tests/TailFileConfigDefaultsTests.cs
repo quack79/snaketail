@@ -8,7 +8,7 @@ public class TailFileConfigDefaultsTests
     [Fact]
     public void TailFileConfig_ctor_should_set_safe_polling_defaults()
     {
-        // 新建配置应使用安全默认轮询，避免 UI 定时器 100ms 空转。
+        // New configs should use safe default polling, so the UI timer doesn't spin at 100ms.
         var config = new TailFileConfig();
 
         Assert.Equal(TailFileConfig.DefaultFileCacheSize, config.FileCacheSize);
@@ -19,7 +19,7 @@ public class TailFileConfigDefaultsTests
     [Fact]
     public void TailFileConfig_xml_without_interval_fields_should_keep_defaults()
     {
-        // 旧配置缺失轮询字段时，应保持构造默认值。
+        // When an old config lacks the polling fields, the constructor defaults should be kept.
         const string xml = "<TailFileConfig />";
         var serializer = new XmlSerializer(typeof(TailFileConfig));
         using var reader = new StringReader(xml);

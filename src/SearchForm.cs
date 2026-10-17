@@ -96,7 +96,7 @@ namespace SnakeTail
                     }
                 }
 
-                // 搜索结果改为窗内提示，避免不可见模态框阻塞界面。
+                // Search results are now shown inline in the window, so an invisible modal dialog can't block the UI.
                 if (found)
                     HideSearchFeedback();
                 else if (keywordHighlights)
@@ -108,7 +108,7 @@ namespace SnakeTail
 
         private void ShowSearchFeedback(string message)
         {
-            // 未命中信息直接显示在搜索窗内，随搜索窗显示与关闭。
+            // The no-match message is shown directly in the search window and shows/hides with it.
             _resultLabel.Text = message;
             _resultLabel.Visible = true;
             SystemSounds.Asterisk.Play();
@@ -116,7 +116,7 @@ namespace SnakeTail
 
         private void HideSearchFeedback()
         {
-            // 成功搜索、重新输入或关闭窗口时清掉提示。
+            // Clear the hint on a successful search, new input, or when the window closes.
             _resultLabel.Visible = false;
             _resultLabel.Text = string.Empty;
         }

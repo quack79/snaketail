@@ -19,7 +19,7 @@
     "todo:1": {
       "task_key": "todo:1",
       "task_label": "1",
-      "task_title": "扩展会话模型以持久化监控规则",
+      "task_title": "Extend the session model to persist monitor rules",
       "session_id": "ses_2980dce1bffemh5vM1P9Cge6ia",
       "agent": "Sisyphus-Junior",
       "category": "deep",
@@ -28,7 +28,7 @@
     "todo:2": {
       "task_key": "todo:2",
       "task_label": "2",
-      "task_title": "固定规则校验、规范化与组合预览语义",
+      "task_title": "Pin down rule validation, normalization and combined preview semantics",
       "session_id": "ses_29346f461ffe9GMu8c0JBAMs0t",
       "agent": "Sisyphus-Junior",
       "category": "deep",
@@ -37,7 +37,7 @@
     "todo:3": {
       "task_key": "todo:3",
       "task_label": "3",
-      "task_title": "新增目录扫描与 watcher 封装层",
+      "task_title": "Add a directory scanning and watcher wrapper layer",
       "session_id": "ses_29322e416ffeOLGi5oq72Dfg7Z",
       "agent": "Sisyphus-Junior",
       "category": "deep",

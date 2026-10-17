@@ -33,7 +33,7 @@
     </application>
   </compatibility>
 
-  <!-- DPI 由 .NET 8 项目属性 ApplicationHighDpiMode 配置 -->
+  <!-- DPI is configured by the .NET 8 project property ApplicationHighDpiMode -->
 
   <!-- Enable themes for Windows common controls and dialogs (Windows XP and later) -->
   <dependency>

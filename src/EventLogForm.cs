@@ -1122,11 +1122,11 @@ namespace SnakeTail
             {
                 try
                 {
-                    // 尝试获取文件列表以验证权限
+                    // Try to get the file list to verify permissions
                     Array array = e.Data.GetData(DataFormats.FileDrop) as Array;
                     if (array != null && array.Length > 0)
                     {
-                        // 检查第一个文件是否可访问（不实际打开，只检查路径）
+                        // Check whether the first file is accessible (don't actually open it, just check the path)
                         string firstFile = array.GetValue(0).ToString();
                         if (!string.IsNullOrEmpty(firstFile) && System.IO.Path.IsPathRooted(firstFile))
                         {
@@ -1137,7 +1137,7 @@ namespace SnakeTail
                 }
                 catch
                 {
-                    // 如果权限检查失败，仍然允许拖拽，让 DragDrop 处理错误
+                    // If the permission check fails, still allow the drag and let DragDrop handle the error
                 }
                 e.Effect = DragDropEffects.Copy;
             }
@@ -1189,7 +1189,7 @@ namespace SnakeTail
                 {
                     try
                     {
-                        // 验证文件路径和权限
+                        // Validate file paths and permissions
                         List<string> validFiles = new List<string>();
                         List<string> invalidFiles = new List<string>();
 
@@ -1200,33 +1200,33 @@ namespace SnakeTail
                                 if (string.IsNullOrEmpty(filename))
                                     continue;
 
-                                // 检查路径是否有效
+                                // Check whether the path is valid
                                 if (!System.IO.Path.IsPathRooted(filename))
                                 {
                                     invalidFiles.Add(filename);
                                     continue;
                                 }
 
-                                // 尝试访问文件信息以验证权限
-                                // 对于目录，检查是否存在
+                                // Try to access the file info to verify permissions
+                                // For directories, check that they exist
                                 if (System.IO.Directory.Exists(filename))
                                 {
-                                    // 目录暂时不支持，跳过
+                                    // Directories aren't supported yet, skip
                                     continue;
                                 }
 
-                                // 对于文件，检查是否存在或是否可以访问
+                                // For files, check whether they exist or can be accessed
                                 if (System.IO.File.Exists(filename))
                                 {
-                                    // 尝试获取文件信息以验证权限
+                                    // Try to get the file info to verify permissions
                                     System.IO.FileInfo fileInfo = new System.IO.FileInfo(filename);
-                                    // 如果文件存在但无法访问，会在 OpenFileSelection 中处理
+                                    // If the file exists but can't be accessed, OpenFileSelection handles it
                                     validFiles.Add(filename);
                                 }
                                 else
                                 {
-                                    // 文件不存在，但可能是新文件或需要特殊权限
-                                    // 尝试检查父目录权限
+                                    // The file doesn't exist, but it may be a new file or need special permissions
+                                    // Try checking the parent directory's permissions
                                     string dir = System.IO.Path.GetDirectoryName(filename);
                                     if (!string.IsNullOrEmpty(dir) && System.IO.Directory.Exists(dir))
                                     {
@@ -1240,11 +1240,11 @@ namespace SnakeTail
                             }
                             catch (System.UnauthorizedAccessException)
                             {
-                                invalidFiles.Add(filename + " (权限不足)");
+                                invalidFiles.Add(filename + " (insufficient permissions)");
                             }
                             catch (System.Security.SecurityException)
                             {
-                                invalidFiles.Add(filename + " (安全权限不足)");
+                                invalidFiles.Add(filename + " (insufficient security permissions)");
                             }
                             catch (Exception ex)
                             {
@@ -1252,22 +1252,22 @@ namespace SnakeTail
                             }
                         }
 
-                        // 打开有效的文件
+                        // Open the valid files
                         if (validFiles.Count > 0)
                         {
                             MainForm.Instance.OpenFileSelection(validFiles.ToArray());
                         }
 
-                        // 显示无效文件的错误消息
+                        // Show an error message for the invalid files
                         if (invalidFiles.Count > 0)
                         {
-                            string errorMsg = "以下文件无法打开：\n\n" + string.Join("\n", invalidFiles.ToArray());
-                            MessageBox.Show(this, errorMsg, "文件拖拽失败", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                            string errorMsg = "The following files could not be opened:\n\n" + string.Join("\n", invalidFiles.ToArray());
+                            MessageBox.Show(this, errorMsg, "File Drop Failed", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                         }
                     }
                     catch (Exception ex)
                     {
-                        MessageBox.Show(this, "打开文件时发生错误：\n\n" + ex.Message, "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        MessageBox.Show(this, "An error occurred while opening the files:\n\n" + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     }
                 }
             }), new object[] { param });

@@ -1,4 +1,4 @@
-# 当 SnakeTail.csproj 中的版本号变动时，自动创建 tag 并触发 Publish 工作流
+# When the version in SnakeTail.csproj changes, automatically create a tag and trigger the Publish workflow
 name: Version Release
 
 on:
@@ -11,18 +11,18 @@ on:
 
 permissions:
   contents: write
-  actions: write    # 用于触发 workflow_dispatch
+  actions: write    # Needed to trigger workflow_dispatch
 
 jobs:
   tag-and-trigger:
     runs-on: ubuntu-latest
     steps:
-      - name: 检出代码
+      - name: Check out code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: 读取版本号
+      - name: Read version
         id: version
         run: |
           VERSION=$(grep -oP '<Version>\K[^<]+' src/SnakeTail.csproj || true)
@@ -30,24 +30,24 @@ jobs:
             VERSION=$(sed -n 's/.*<Version>\([^<]*\)<\/Version>.*/\1/p' src/SnakeTail.csproj)
           fi
           echo "version=$VERSION" >> $GITHUB_OUTPUT
-          echo "当前版本: $VERSION"
+          echo "Current version: $VERSION"
         shell: bash
 
-      - name: 检查 tag 是否已存在
+      - name: Check whether tag already exists
         id: check-tag
         run: |
           TAG="v${{ steps.version.outputs.version }}"
           if git ls-remote --tags origin "refs/tags/${TAG}" | grep -q .; then
             echo "exists=true" >> $GITHUB_OUTPUT
-            echo "tag ${TAG} 已存在，跳过发布"
+            echo "Tag ${TAG} already exists, skipping release"
           else
             echo "exists=false" >> $GITHUB_OUTPUT
-            echo "将创建 tag ${TAG} 并触发发布"
+            echo "Will create tag ${TAG} and trigger release"
           fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: 创建并推送 tag
+      - name: Create and push tag
         if: steps.check-tag.outputs.exists != 'true'
         run: |
           TAG="v${{ steps.version.outputs.version }}"
@@ -56,7 +56,7 @@ jobs:
           git tag -a "$TAG" -m "Release $TAG"
           git push origin "$TAG"
 
-      - name: 触发 Publish 工作流
+      - name: Trigger Publish workflow
         if: steps.check-tag.outputs.exists != 'true'
         run: |
           gh workflow run publish.yml -f tag="v${{ steps.version.outputs.version }}"

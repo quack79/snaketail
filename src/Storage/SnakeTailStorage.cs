@@ -25,7 +25,7 @@ using SnakeTail;
 namespace SnakeTail.Storage
 {
     /// <summary>
-    /// xSnakeTail.db 统一存储：最近打开文件、默认会话等，与 MainForm 解耦。
+    /// Unified xSnakeTail.db storage: recently opened files, default session, etc., decoupled from MainForm.
     /// </summary>
     public sealed class SnakeTailStorage : IDisposable
     {
@@ -44,7 +44,7 @@ namespace SnakeTail.Storage
         {
             if (string.IsNullOrEmpty(dbPath))
             {
-                // 使用 %LOCALAPPDATA%\SnakeTail\xSnakeTail.db，不占用 exe 目录
+                // Use %LOCALAPPDATA%\SnakeTail\xSnakeTail.db so the exe directory isn't used
                 string localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
                 _dbPath = Path.Combine(localAppData, "SnakeTail", "xSnakeTail.db");
             }
@@ -59,7 +59,7 @@ namespace SnakeTail.Storage
 
         public bool IsAvailable => _isAvailable;
 
-        #region 最近打开文件 (RecentFiles)
+        #region Recently opened files (RecentFiles)
 
         public List<string> GetRecentFiles(int maxCount)
         {
@@ -178,10 +178,10 @@ namespace SnakeTail.Storage
 
         #endregion
 
-        #region 默认会话 (DefaultSession)
+        #region Default session (DefaultSession)
 
         /// <summary>
-        /// 保存默认会话到 db（序列化由本类内部完成）
+        /// Saves the default session to the db (serialization is done inside this class)
         /// </summary>
         public void SaveDefaultSession(TailConfig config)
         {
@@ -192,7 +192,7 @@ namespace SnakeTail.Storage
         }
 
         /// <summary>
-        /// 从 db 加载默认会话，反序列化为 TailConfig
+        /// Loads the default session from the db and deserializes it into a TailConfig
         /// </summary>
         public TailConfig LoadDefaultSession()
         {
@@ -234,7 +234,7 @@ namespace SnakeTail.Storage
 
         #endregion
 
-        #region 内部：SQLite 与 AppSettings
+        #region Internal: SQLite and AppSettings
 
         private string GetSetting(string key)
         {
@@ -341,7 +341,7 @@ namespace SnakeTail.Storage
                 }
                 catch (Exception ex)
                 {
-                    throw new InvalidOperationException(string.Format("无法初始化 SQLite: {0}\n路径: {1}", ex.Message, _dbPath), ex);
+                    throw new InvalidOperationException(string.Format("Could not initialize SQLite: {0}\nPath: {1}", ex.Message, _dbPath), ex);
                 }
             }
         }

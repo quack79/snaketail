@@ -8,10 +8,10 @@ public class TailFileConfigPluginTests
     [Fact]
     public void EnabledDisplayPlugins_xml_roundtrip_should_keep_order()
     {
-        // 验证插件启用顺序可被 XML 正确保存与恢复
+        // Verify the plugin enable order is correctly saved to and restored from XML
         var config = new TailFileConfig
         {
-            EnabledDisplayPlugins = new List<string> { "龙女仆", "示例插件B" }
+            EnabledDisplayPlugins = new List<string> { "DragonMaid", "Example Plugin B" }
         };
 
         var serializer = new XmlSerializer(typeof(TailFileConfig));
@@ -24,7 +24,7 @@ public class TailFileConfigPluginTests
 
         Assert.NotNull(restored.EnabledDisplayPlugins);
         Assert.Equal(2, restored.EnabledDisplayPlugins.Count);
-        Assert.Equal("龙女仆", restored.EnabledDisplayPlugins[0]);
-        Assert.Equal("示例插件B", restored.EnabledDisplayPlugins[1]);
+        Assert.Equal("DragonMaid", restored.EnabledDisplayPlugins[0]);
+        Assert.Equal("Example Plugin B", restored.EnabledDisplayPlugins[1]);
     }
 }

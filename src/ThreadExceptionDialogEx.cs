@@ -247,7 +247,7 @@ namespace SnakeTail
         }
     }
 
-    /// <summary>从 GitHub Releases API 检查是否有新版本（与 publish 工作流发布的 tag 一致）。</summary>
+    /// <summary>Checks the GitHub Releases API for a newer version (matching the tags published by the publish workflow).</summary>
     class CheckForUpdates
     {
         public bool PromptAlways { get; set; }
@@ -285,7 +285,7 @@ namespace SnakeTail
                 if (String.IsNullOrEmpty(tagName))
                 {
                     if (PromptAlways)
-                        MessageBox.Show(DialogOwner.Resolve(), "无法获取最新版本信息（暂无发布）。", "检查更新", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        MessageBox.Show(DialogOwner.Resolve(), "Could not get the latest version information (no releases yet).", "Check for Updates", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     return;
                 }
 
@@ -293,40 +293,40 @@ namespace SnakeTail
                 if (!Version.TryParse(versionStr, out Version latestVer))
                 {
                     if (PromptAlways)
-                        MessageBox.Show(DialogOwner.Resolve(), "当前已是最新版本。", "检查更新", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        MessageBox.Show(DialogOwner.Resolve(), "You are already on the latest version.", "Check for Updates", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     return;
                 }
 
                 Version currentVer = Assembly.GetExecutingAssembly().GetName().Version;
                 if (latestVer > currentVer)
                 {
-                    string message = "新版本 " + latestVer.ToString() + " 已发布。";
+                    string message = "New version " + latestVer.ToString() + " has been released.";
                     if (!String.IsNullOrEmpty(htmlUrl))
                     {
-                        DialogResult res = MessageBox.Show(DialogOwner.Resolve(), message + "\n\n是否打开 GitHub 发布页查看并下载？", "发现新版本", MessageBoxButtons.OKCancel, MessageBoxIcon.Question);
+                        DialogResult res = MessageBox.Show(DialogOwner.Resolve(), message + "\n\nOpen the GitHub releases page to view and download it?", "New Version Available", MessageBoxButtons.OKCancel, MessageBoxIcon.Question);
                         if (res == DialogResult.OK)
                             System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(htmlUrl) { UseShellExecute = true });
                     }
                     else
                     {
-                        MessageBox.Show(DialogOwner.Resolve(), message + "\n\n请访问 https://github.com/sunnybug/snaketail-net/releases 下载。", "发现新版本", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        MessageBox.Show(DialogOwner.Resolve(), message + "\n\nPlease visit https://github.com/sunnybug/snaketail-net/releases to download it.", "New Version Available", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     }
                     return;
                 }
 
                 if (PromptAlways)
-                    MessageBox.Show(DialogOwner.Resolve(), "当前已是最新版本。", "检查更新", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    MessageBox.Show(DialogOwner.Resolve(), "You are already on the latest version.", "Check for Updates", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             catch (WebException ex)
             {
                 string msg = (ex.Response is HttpWebResponse http && http.StatusCode == System.Net.HttpStatusCode.NotFound)
-                    ? "暂无发布版本。"
-                    : "无法检查更新（网络或服务器错误）。";
-                MessageBox.Show(DialogOwner.Resolve(), msg, "检查更新", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    ? "No releases yet."
+                    : "Could not check for updates (network or server error).";
+                MessageBox.Show(DialogOwner.Resolve(), msg, "Check for Updates", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
             catch (JsonException)
             {
-                MessageBox.Show(DialogOwner.Resolve(), "无法解析更新信息。", "检查更新", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show(DialogOwner.Resolve(), "Could not parse the update information.", "Check for Updates", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
         }
     }

@@ -1,185 +1,185 @@
-# 极简目录通配符监控入口
+# Minimal Directory Wildcard Monitor Entry
 
 ## TL;DR
-> **Summary**: 在 File 菜单新增一个极简的“监控目录（通配符）”入口，只选目录、填通配符，立即开始监控，目录内新文件/变更文件自动追加到界面显示。
-> **Deliverables**: SimpleDirectoryMonitorDialog.cs, 菜单入口新增, 监控逻辑对接, README 补充说明
+> **Summary**: Add a minimal "Watch Directory (Wildcard)" entry to the File menu: pick a directory, enter a wildcard, and monitoring starts immediately; new or changed files in the directory are automatically appended to the UI.
+> **Deliverables**: SimpleDirectoryMonitorDialog.cs, new menu entry, monitoring wiring, README notes
 > **Effort**: Short
 > **Parallel**: NO
-> **Critical Path**: 创建对话框 → 新增菜单 → 对接监控并自动打开Tail → 更新文档 → 构建
+> **Critical Path**: Create dialog → add menu → wire up monitoring and auto-open Tail → update docs → build
 
 ## Context
 ### Original Request
-“这个功能太复杂了，我只需要能监控指定目录下模糊匹配的文件，若有旧文件内容变动或新建文件，能即时监控到并输出到工具界面上”
+"This feature is too complicated. I just need to monitor files matching a fuzzy pattern in a given directory; if an existing file changes or a new file is created, it should be picked up immediately and shown in the tool's UI."
 
-### 现有情况
-- 已有 MonitorDirectoryWatcher：单个目录非递归监控，支持通配符 *?，能发现新文件
-- 已有 TailForm：可打开单个文件并实时尾追
-- 已加的 Open Wildcard Monitor... 入口：会打开复杂配置对话框
-- 期望：极简两步：选目录 + 填通配符 → 立即开始监控，新文件/变更文件自动显示
+### Current State
+- MonitorDirectoryWatcher already exists: non-recursive monitoring of a single directory, supports * and ? wildcards, detects new files
+- TailForm already exists: opens a single file and tails it in real time
+- The already-added Open Wildcard Monitor... entry opens a complex configuration dialog
+- Desired: two minimal steps: pick a directory + enter a wildcard → monitoring starts immediately, new/changed files show up automatically
 
 ## Work Objectives
 ### Core Objective
-新增菜单入口，直接让用户选目录、填通配符，确定后立即对该目录开始通配符监控，目录下匹配的新文件/变更文件自动追加到一个 MDI 子窗口中显示。
+Add a menu entry that lets the user pick a directory and enter a wildcard directly; on OK, wildcard monitoring of that directory starts immediately, and new/changed matching files in it are automatically appended to an MDI child window.
 
 ### Deliverables
-1. 极简对话框 `SimpleDirectoryMonitorDialog.cs`：只选目录 + 填通配符（默认 *.log）
-2. File 菜单新增第二个入口：“监控目录（通配符）”（或“Watch Directory (Wildcard)”）
-3. 监控逻辑：选择后创建 MonitorDirectoryWatcher，匹配的文件自动用 TailForm 打开并显示到界面
-4. README.md 更新：说明两个入口的区别
-5. 构建验证通过
+1. Minimal dialog `SimpleDirectoryMonitorDialog.cs`: only a directory picker + wildcard (default *.log)
+2. A second new entry in the File menu: "Watch Directory (Wildcard)"
+3. Monitoring logic: after selection, create a MonitorDirectoryWatcher; matching files are automatically opened with TailForm and shown in the UI
+4. Update README.md: explain the difference between the two entries
+5. Build verification passes
 
 ### Definition of Done
-- Release 构建通过（./script/build.ps1 --release）
-- 菜单可见：File → 监控目录（通配符）
-- 点击后弹出对话框，可选目录、填通配符
-- 确定后目录内匹配的已有/新文件自动在界面上用 TailForm 打开并尾追
+- Release build passes (./script/build.ps1 --release)
+- Menu visible: File → Watch Directory (Wildcard)
+- Clicking it opens a dialog where you can pick a directory and enter a wildcard
+- After OK, existing/new matching files in the directory are automatically opened and tailed in the UI with TailForm
 
 ### Must Have
-- 极简 UI：没有复杂配置，只有目录 + 通配符
-- 自动监控并打开新文件
-- 复用 MonitorDirectoryWatcher 和 TailForm，不重复造轮子
+- Minimal UI: no complex configuration, just directory + wildcard
+- Automatically monitor and open new files
+- Reuse MonitorDirectoryWatcher and TailForm; don't reinvent the wheel
 
 ### Must NOT Have
-- 不要打开复杂的 TailConfigForm
-- 不要要求用户配置编码/间隔/颜色等
-- 不修改现有逻辑，只新增最小化代码
+- Do not open the complex TailConfigForm
+- Do not ask the user to configure encoding/interval/colors etc.
+- Do not modify existing logic; add only minimal new code
 
 ## Verification Strategy
-- 构建通过 + 测试通过
-- QA 手动走菜单：打开对话框 → 选本地日志目录 → 确定 → 看新文件/变更文件是否显示
-- 证据：截图或录屏（可选）
+- Build passes + tests pass
+- Manual QA through the menu: open dialog → pick a local log directory → OK → check that new/changed files appear
+- Evidence: screenshot or screen recording (optional)
 
 ## Execution Strategy
 ### Steps
-1. 创建 SimpleDirectoryMonitorDialog.cs：只含目录选择 + 通配符文本框
-2. 在 MainForm.Designer.cs 的 File 菜单下新增第二个入口（放在 Open File 下面）
-3. 在 MainForm.cs 中实现菜单点击逻辑：打开对话框 → 创建 MonitorDirectoryWatcher → 对匹配文件调用 OpenFileSelection 或单独打开 TailForm
-4. 更新 README.md 说明两个入口：“极简监控目录” vs “完整通配符配置”
-5. 运行构建 ./script/build.ps1 --release，确保 0 错误
+1. Create SimpleDirectoryMonitorDialog.cs: only a directory picker + wildcard text box
+2. Add a second entry under the File menu in MainForm.Designer.cs (below Open File)
+3. Implement the menu click logic in MainForm.cs: open dialog → create MonitorDirectoryWatcher → call OpenFileSelection on matching files or open a TailForm for each
+4. Update README.md to explain the two entries: "minimal directory watch" vs "full wildcard configuration"
+5. Run the build ./script/build.ps1 --release and make sure there are 0 errors
 
 ## TODOs
-- [ ] 1. 创建 SimpleDirectoryMonitorDialog.cs（极简选目录+通配符）
+- [ ] 1. Create SimpleDirectoryMonitorDialog.cs (minimal directory + wildcard picker)
 
-  **What to do**: 在 src/ 下创建 SimpleDirectoryMonitorDialog.cs，只包含：
-  - Label + TextBox + 按钮（浏览目录）
-  - Label + TextBox（通配符，默认 *.log）
-  - 确定/取消按钮
-  - 验证：目录存在，通配符非空
+  **What to do**: Create SimpleDirectoryMonitorDialog.cs under src/, containing only:
+  - Label + TextBox + button (browse for directory)
+  - Label + TextBox (wildcard, default *.log)
+  - OK/Cancel buttons
+  - Validation: directory exists, wildcard is not empty
 
-  **Must NOT do**: 不要有任何其他配置选项（编码/颜色/间隔等）
+  **Must NOT do**: No other configuration options at all (encoding/colors/interval etc.)
 
-  **References**: 可参考 OpenEventLogDialog.cs 的结构
+  **References**: The structure of OpenEventLogDialog.cs can serve as a reference
 
-  **Acceptance Criteria**: 可编译，对话框能弹出，能选目录，通配符可编辑
+  **Acceptance Criteria**: Compiles, dialog opens, a directory can be picked, wildcard is editable
 
   **QA Scenarios**:
   ```
-  Scenario: 打开对话框
-    Tool: 手动（或后续通过 Playwright）
-    Steps: 点击 File 菜单下的新入口
-    Expected: 弹出 SimpleDirectoryMonitorDialog，默认通配符为 *.log
-    Evidence: 截图或录屏片段
+  Scenario: Open the dialog
+    Tool: Manual (or later via Playwright)
+    Steps: Click the new entry under the File menu
+    Expected: SimpleDirectoryMonitorDialog opens with the default wildcard *.log
+    Evidence: Screenshot or screen recording clip
   ```
 
   **Commit**: YES | Message: "feat: add SimpleDirectoryMonitorDialog for minimal watch directory UI" | Files: [src/SimpleDirectoryMonitorDialog.cs]
 
-- [ ] 2. 在 File 菜单新增“监控目录（通配符）”入口
+- [ ] 2. Add a "Watch Directory (Wildcard)" entry to the File menu
 
-  **What to do**: 在 MainForm.Designer.cs 的 File 菜单下新增菜单项，放在 openToolStripMenuItem 之后、openEventLogToolStripMenuItem 之前。文本：“Watch &Directory...” 或 “监控目录（通配符）”，快捷键可选 Ctrl+Shift+D 或不设快捷键。
+  **What to do**: Add a menu item under the File menu in MainForm.Designer.cs, after openToolStripMenuItem and before openEventLogToolStripMenuItem. Text: "Watch &Directory..." or "Watch Directory (Wildcard)"; shortcut optionally Ctrl+Shift+D or none.
 
-  **Must NOT do**: 不要修改现有菜单项的顺序/大小/文本（除了必要的 Size 对齐）
+  **Must NOT do**: Do not change the order/size/text of existing menu items (except necessary Size alignment)
 
-  **References**: MainForm.Designer.cs 中 openToolStripMenuItem 的声明方式
+  **References**: How openToolStripMenuItem is declared in MainForm.Designer.cs
 
-  **Acceptance Criteria**: 菜单可见，位置在 Open File 下方
+  **Acceptance Criteria**: Menu visible, positioned below Open File
 
   **QA Scenarios**:
   ```
-  Scenario: 菜单可见
-    Tool: 手动
-    Steps: 启动程序，打开 File 菜单
-    Expected: 看到“监控目录（通配符）”（或“Watch Directory...”）
-    Evidence: 截图
+  Scenario: Menu visible
+    Tool: Manual
+    Steps: Start the program, open the File menu
+    Expected: "Watch Directory (Wildcard)" (or "Watch Directory...") is visible
+    Evidence: Screenshot
   ```
 
   **Commit**: YES | Message: "feat: add menu entry for simple directory monitor" | Files: [src/MainForm.Designer.cs]
 
-- [ ] 3. 实现菜单点击逻辑：选目录后开始监控并自动打开匹配文件
+- [ ] 3. Implement the menu click logic: after picking a directory, start monitoring and automatically open matching files
 
-  **What to do**: 在 MainForm.cs 中新增点击事件处理：
-  - 打开 SimpleDirectoryMonitorDialog
-  - 用户确定后创建 MonitorDirectoryWatcher
-  - 对初始匹配的已有文件，调用 OpenFileSelection 或单独打开 TailForm
-  - 对后续新增/变更的匹配文件，同样打开 TailForm 追加显示
-  - 尽量复用 EnsureDefaultTailConfig() 和 CloneTailFileConfig() 避免重复代码
+  **What to do**: Add a click event handler in MainForm.cs:
+  - Open SimpleDirectoryMonitorDialog
+  - After the user clicks OK, create a MonitorDirectoryWatcher
+  - For existing files that match initially, call OpenFileSelection or open a TailForm for each
+  - For matching files added/changed later, likewise open a TailForm to show them
+  - Reuse EnsureDefaultTailConfig() and CloneTailFileConfig() where possible to avoid duplicate code
 
-  **Must NOT do**: 不要打开 TailConfigForm，不要让用户再配置
+  **Must NOT do**: Do not open TailConfigForm; do not make the user configure anything else
 
-  **References**: MonitorDirectoryWatcher.cs 的 FileMatched 事件、MainForm.cs 中 OpenFileSelection 的打开逻辑
+  **References**: The FileMatched event in MonitorDirectoryWatcher.cs; the open logic of OpenFileSelection in MainForm.cs
 
-  **Acceptance Criteria**: 选择目录后，目录下匹配通配符的已有/新文件能在界面上自动打开并尾追
+  **Acceptance Criteria**: After picking a directory, existing/new files in it that match the wildcard are automatically opened and tailed in the UI
 
   **QA Scenarios**:
   ```
-  Scenario: 打开已有匹配文件
-    Tool: 手动
-    Steps: 在测试目录下放 a.log / b.log，选该目录，确定
-    Expected: 两个文件都自动在界面上打开，开始尾追
-    Evidence: 截图
+  Scenario: Open existing matching files
+    Tool: Manual
+    Steps: Put a.log / b.log in a test directory, pick that directory, click OK
+    Expected: Both files are automatically opened in the UI and tailing starts
+    Evidence: Screenshot
   ```
 
   ```
-  Scenario: 新增匹配文件自动打开
-    Tool: 手动
-    Steps: 打开监控后，在目录下新增 c.log
-    Expected: c.log 自动在界面上打开并开始尾追
-    Evidence: 截图
+  Scenario: New matching file is opened automatically
+    Tool: Manual
+    Steps: After starting monitoring, add c.log to the directory
+    Expected: c.log is automatically opened in the UI and tailing starts
+    Evidence: Screenshot
   ```
 
   **Commit**: YES | Message: "feat: implement simple directory monitor logic that auto-tails matched files" | Files: [src/MainForm.cs]
 
-- [ ] 4. 更新 README.md，说明两个入口区别
+- [ ] 4. Update README.md to explain the difference between the two entries
 
-  **What to do**: 在 README 的“跟踪日志目录...”条目下，补充说明：
-  - File → 监控目录（通配符）：极简，只选目录+通配符，新文件自动打开
-  - File → Open Wildcard Monitor...：完整配置，可配置编码/间隔/颜色等
+  **What to do**: Under the "Tail log directory..." item in the README, add:
+  - File → Watch Directory (Wildcard): minimal; just pick a directory + wildcard, new files open automatically
+  - File → Open Wildcard Monitor...: full configuration; encoding/interval/colors etc. can be configured
 
-  **References**: README.md 中现有的通配符说明
+  **References**: The existing wildcard notes in README.md
 
-  **Acceptance Criteria**: README 中明确说明两个入口
+  **Acceptance Criteria**: The README clearly explains both entries
 
   **Commit**: YES | Message: "docs: update README to explain both wildcard monitor entries" | Files: [README.md]
 
-- [ ] 5. 最终验证：运行 Release 构建 + 测试
+- [ ] 5. Final verification: run the Release build + tests
 
-  **What to do**: 运行 ./script/build.ps1 --release，确保 0 错误/警告（忽略既有警告）。运行 dotnet test，确保 0 失败。
+  **What to do**: Run ./script/build.ps1 --release and make sure there are 0 errors/warnings (ignore pre-existing warnings). Run dotnet test and make sure there are 0 failures.
 
   **References**: CLAUDE.md
 
-  **Acceptance Criteria**: 构建通过，测试通过
+  **Acceptance Criteria**: Build passes, tests pass
 
   **QA Scenarios**:
   ```
-  Scenario: Release 构建通过
+  Scenario: Release build passes
     Tool: Bash
     Steps: ./script/build.ps1 --release
-    Expected: 0 错误，0 警告（忽略既有）
-    Evidence: 构建输出
+    Expected: 0 errors, 0 warnings (ignoring pre-existing ones)
+    Evidence: Build output
   ```
 
-  **Commit**: NO | 不自动提交，由后续 /start-work 收尾时按约定提交
+  **Commit**: NO | Do not commit automatically; committed per convention when a later /start-work wraps up
 
 ## Final Verification Wave
-- [ ] F1. Plan Compliance Audit — 人工检查是否符合计划
-- [ ] F2. 手动 QA 走通：菜单 → 对话框 → 选目录 → 自动打开新文件
-- [ ] F3. Scope Fidelity Check — 确认没有加复杂配置，只有目录+通配符
+- [ ] F1. Plan Compliance Audit — manually check conformance with the plan
+- [ ] F2. Manual QA walkthrough: menu → dialog → pick directory → new files open automatically
+- [ ] F3. Scope Fidelity Check — confirm no complex configuration was added, only directory + wildcard
 
 ## Commit Strategy
-- 每个任务一个提交（除了 F 波）
-- 按任务 1→2→3→4 顺序提交
-- 最终由 /start-work 统一收尾提交（按 CLAUDE.md）
+- One commit per task (except the F wave)
+- Commit in task order 1→2→3→4
+- Final wrap-up commit by /start-work (per CLAUDE.md)
 
 ## Success Criteria
-- 极简入口可见可用
-- 选目录+通配符后，新文件/变更文件自动在界面显示
-- Release 构建通过
+- Minimal entry is visible and usable
+- After picking a directory + wildcard, new/changed files are automatically shown in the UI
+- Release build passes

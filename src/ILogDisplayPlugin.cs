@@ -3,44 +3,44 @@ using System;
 namespace SnakeTail
 {
     /// <summary>
-    /// 日志显示插件接口：只处理显示链路中的文本，不修改原始日志文件。
+    /// Log display plugin interface: only processes text in the display pipeline; never modifies the raw log file.
     /// </summary>
     public interface ILogDisplayPlugin
     {
         /// <summary>
-        /// 插件显示名称；为空时宿主回退到插件目录名。
+        /// Plugin display name; when empty, the host falls back to the plugin directory name.
         /// </summary>
         string Name { get; }
 
         /// <summary>
-        /// 初始化插件上下文。
+        /// Initializes the plugin context.
         /// </summary>
         void Initialize(PluginContext context);
 
         /// <summary>
-        /// 判断当前行是否需要进入处理。
+        /// Determines whether the current line needs processing.
         /// </summary>
         bool CanProcess(string line);
 
         /// <summary>
-        /// 尝试处理当前行；Handled=true 表示接管并终止后续插件。
+        /// Tries to process the current line; Handled=true means the plugin takes over and later plugins are skipped.
         /// </summary>
         PluginProcessResult TryProcess(string line);
     }
 
     /// <summary>
-    /// 可选块提取接口：用于把当前行扩展为“整块文本”再进入插件处理。
+    /// Optional block extraction interface: expands the current line into a "whole text block" before plugin processing.
     /// </summary>
     public interface ILogDisplayBlockPlugin
     {
         /// <summary>
-        /// 尝试从当前行收集一个完整块；返回 true 时宿主将块文本传给插件。
+        /// Tries to collect a complete block starting at the current line; when it returns true the host passes the block text to the plugin.
         /// </summary>
         bool TryCollectBlock(int lineKey, string currentLine, Func<int, string> readLineByLineKey, out string blockText);
     }
 
     /// <summary>
-    /// 插件上下文：提供只读目录与宿主信息。
+    /// Plugin context: provides read-only directories and host information.
     /// </summary>
     public sealed class PluginContext
     {
@@ -59,7 +59,7 @@ namespace SnakeTail
     }
 
     /// <summary>
-    /// 插件处理结果。
+    /// Plugin processing result.
     /// </summary>
     public struct PluginProcessResult
     {

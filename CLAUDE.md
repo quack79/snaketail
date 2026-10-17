@@ -1,6 +1,6 @@
-## agent结束后
-总是执行 ./script/build.ps1 --release
-自动提交到git
+## After the agent finishes
+Always run ./script/build.ps1 --release
+Auto-commit to git
 
-## UI入口约定
-- 目录通配符监控入口：`File -> Open Wildcard Monitor...`（`Ctrl+Shift+O`）。
+## UI entry conventions
+- Directory wildcard monitor entry: `File -> Open Wildcard Monitor...` (`Ctrl+Shift+O`).

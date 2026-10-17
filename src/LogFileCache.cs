@@ -26,8 +26,8 @@ namespace SnakeTail
         public List<ListViewItem> Items { get; set; }
 
         /// <summary>
-        /// 行号偏移量，用于清空显示后从文件的实际位置读取
-        /// 文件行号 = LineOffset + cache索引 + 1
+        /// Line number offset, used to read from the file's actual position after the display is cleared
+        /// File line number = LineOffset + cache index + 1
         /// </summary>
         public int LineOffset { get; set; }
 
@@ -171,7 +171,7 @@ namespace SnakeTail
                         FillCacheEvent(this, EventArgs.Empty);
                 }
 
-                // 文件行号 = LineOffset + cache索引 + 1
+                // File line number = LineOffset + cache index + 1
                 string line = logFileStream.ReadLine(LineOffset + FirstIndex + i + 1);
                 if (line == null)
                 {

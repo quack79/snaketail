@@ -19,7 +19,7 @@ using System.Windows.Forms;
 
 namespace SnakeTail
 {
-    /// <summary>统一解析对话框 owner，避免弹窗失去父窗口。</summary>
+    /// <summary>Resolves the dialog owner in one place so dialogs never lose their parent window.</summary>
     static class DialogOwner
     {
         [DllImport("user32.dll")]
@@ -37,16 +37,16 @@ namespace SnakeTail
 
         public static IWin32Window Resolve()
         {
-            // 优先主窗口，确保弹窗跟随应用主界面
+            // Prefer the main window so dialogs follow the app's main UI
             if (MainForm.Instance != null && !MainForm.Instance.IsDisposed && MainForm.Instance.IsHandleCreated)
                 return MainForm.Instance;
 
-            // 次选当前活动窗体，兼容子窗口场景
+            // Next, the currently active form, for child window scenarios
             Form activeForm = Form.ActiveForm;
             if (activeForm != null && !activeForm.IsDisposed && activeForm.IsHandleCreated)
                 return activeForm;
 
-            // 最后回退前台窗口句柄，避免无 owner 的顶层弹窗
+            // Finally fall back to the foreground window handle, to avoid top-level dialogs with no owner
             IntPtr foreground = GetForegroundWindow();
             if (foreground != IntPtr.Zero)
                 return new WindowHandleOwner(foreground);

@@ -39,9 +39,9 @@ namespace SnakeTail
 
         private JWC.MruStripMenu _mruMenu;
         private SnakeTailStorage _storage;
-        // 记录最近一次会话加载失败原因，供多选汇总与日志输出。
+        // Records the reason for the most recent session load failure, for the multi-select summary and logging.
         private string _lastSessionLoadErrorReason = null;
-        /// <summary>记录存在“未读变更”的标签页，用于绘制红点提示。</summary>
+        /// <summary>Tracks tabs with "unread changes", used to draw the red dot indicator.</summary>
         private HashSet<TabPage> _changedTabPages = new HashSet<TabPage>();
 
         public MainForm()
@@ -57,11 +57,11 @@ namespace SnakeTail
             _MDITabControl.ImageList.TransparentColor = System.Drawing.Color.Transparent;
             _MDITabControl.ImageList.Images.Add(new Bitmap(Properties.Resources.GreenBulletIcon.ToBitmap()));
             _MDITabControl.ImageList.Images.Add(new Bitmap(Properties.Resources.YellowBulletIcon.ToBitmap()));
-            // 启用自绘标签页，用于叠加“未读变更”红点。
+            // Enable owner-drawn tabs to overlay the "unread changes" red dot.
             _MDITabControl.DrawMode = TabDrawMode.OwnerDrawFixed;
             _MDITabControl.DrawItem += _MDITabControl_DrawItem;
 
-            // 最近打开文件仅使用 xSnakeTail.db，不使用注册表
+            // Recently opened files use only xSnakeTail.db, not the registry
             _mruMenu = new JWC.MruStripMenuInline(recentFilesToolStripMenuItem, recentFile1ToolStripMenuItem, new JWC.MruStripMenu.ClickedHandler(OnMruFile), null, false, 10);
             try
             {
@@ -78,8 +78,8 @@ namespace SnakeTail
             catch (Exception ex)
             {
                 _storage = null;
-                MessageBox.Show(this, "无法初始化 SQLite 数据库，最近打开的文件列表将无法保存。\n\n错误: " + ex.Message,
-                    "警告", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show(this, "Could not initialize the SQLite database; the recently opened files list will not be saved.\n\nError: " + ex.Message,
+                    "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
         }
 
@@ -95,7 +95,7 @@ namespace SnakeTail
             }
             catch
             {
-                // 忽略在窗口关闭时更新标题的错误
+                // Ignore errors updating the title while the window is closing
             }
         }
 
@@ -123,14 +123,14 @@ namespace SnakeTail
             }
             else
             {
-                // 如果没有命令行参数，从 xSnakeTail.db 加载上次会话
+                // If there are no command-line arguments, load the last session from xSnakeTail.db
                 try
                 {
                     LoadSessionFromDb();
                 }
                 catch
                 {
-                    // 忽略加载错误，继续正常启动
+                    // Ignore load errors and continue starting normally
                 }
             }
         }
@@ -255,7 +255,7 @@ namespace SnakeTail
         }
 
         /// <summary>
-        /// 设置指定 MDI 子窗体对应标签页的“未读变更”标记。
+        /// Sets the "unread changes" flag on the tab of the given MDI child form.
         /// </summary>
         public void SetMdiTabChanged(Form mdiChild, bool changed)
         {
@@ -278,7 +278,7 @@ namespace SnakeTail
         }
 
         /// <summary>
-        /// 判断指定 MDI 子窗体是否是当前激活页。
+        /// Determines whether the given MDI child form is the active tab.
         /// </summary>
         public bool IsMdiChildActive(Form mdiChild)
         {
@@ -286,7 +286,7 @@ namespace SnakeTail
         }
 
         /// <summary>
-        /// 查询标签页是否存在未读变更。
+        /// Queries whether a tab has unread changes.
         /// </summary>
         private bool IsTabChanged(TabPage tabPage)
         {
@@ -312,7 +312,7 @@ namespace SnakeTail
         {
             EnsureDefaultTailConfig();
 
-            // 复用默认配置并强制开启“通配符路径监控”。
+            // Reuse the default config and force "wildcard path monitoring" on.
             TailFileConfig tailConfig = CloneTailFileConfig(_defaultTailConfig);
             tailConfig.FileCheckPattern = true;
 
@@ -325,11 +325,11 @@ namespace SnakeTail
             TailFileConfig selectedConfig = configForm.TailFileConfig;
             if (selectedConfig == null || string.IsNullOrWhiteSpace(selectedConfig.FilePath))
             {
-                MessageBox.Show(this, "请输入要监控的路径（可带通配符，如 *.log）。", "Open Wildcard Monitor", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show(this, "Enter the path to monitor (wildcards allowed, e.g. *.log).", "Open Wildcard Monitor", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
 
-            // 菜单入口语义固定为“目录内通配符匹配监控”。
+            // The menu entry always means "wildcard match monitoring within a directory".
             selectedConfig.FileCheckPattern = true;
 
             string configPath = string.Empty;
@@ -354,8 +354,8 @@ namespace SnakeTail
             catch (Exception ex)
             {
                 string reason = BuildExceptionMessage(ex);
-                AppLog.AppendDaily(AppLog.LevelErr, string.Format("打开通配符监控失败: Path={0}, Error={1}", selectedConfig.FilePath, reason));
-                MessageBox.Show(this, "无法打开通配符监控配置：\n\n" + selectedConfig.FilePath + "\n\n" + reason, "Open Wildcard Monitor", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                AppLog.AppendDaily(AppLog.LevelErr, string.Format("Failed to open wildcard monitor: Path={0}, Error={1}", selectedConfig.FilePath, reason));
+                MessageBox.Show(this, "Could not open the wildcard monitor configuration:\n\n" + selectedConfig.FilePath + "\n\n" + reason, "Open Wildcard Monitor", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 if (!mdiForm.IsDisposed)
                     mdiForm.Close();
                 return;
@@ -363,9 +363,9 @@ namespace SnakeTail
 
             if (mdiForm.IsDisposed)
             {
-                string reason = string.IsNullOrEmpty(mdiForm.LastLoadFailureReason) ? "加载过程中窗口被关闭（未返回详细原因）" : mdiForm.LastLoadFailureReason;
-                AppLog.AppendDaily(AppLog.LevelWarn, string.Format("打开通配符监控未完成: Path={0}, Reason={1}", selectedConfig.FilePath, reason));
-                MessageBox.Show(this, "打开通配符监控未完成：\n\n" + selectedConfig.FilePath + "\n\n" + reason, "Open Wildcard Monitor", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                string reason = string.IsNullOrEmpty(mdiForm.LastLoadFailureReason) ? "The window was closed during loading (no detailed reason returned)" : mdiForm.LastLoadFailureReason;
+                AppLog.AppendDaily(AppLog.LevelWarn, string.Format("Opening wildcard monitor did not complete: Path={0}, Reason={1}", selectedConfig.FilePath, reason));
+                MessageBox.Show(this, "Opening the wildcard monitor did not complete:\n\n" + selectedConfig.FilePath + "\n\n" + reason, "Open Wildcard Monitor", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
@@ -431,7 +431,7 @@ namespace SnakeTail
                 TailForm mdiForm = new TailForm();
                 try
                 {
-                    // 每个文件使用独立配置副本，避免多个标签页共享同一对象导致串线。
+                    // Each file gets its own config copy, so multiple tabs sharing one object can't get crossed.
                     TailFileConfig tailConfig = CloneTailFileConfig(_defaultTailConfig);
                     tailConfig.FilePath = filename;
                     // Auto-detect encoding when opening a file
@@ -448,8 +448,8 @@ namespace SnakeTail
                 catch (Exception ex)
                 {
                     string reason = BuildExceptionMessage(ex);
-                    failedFiles.Add(string.Format("{0}\n  原因: {1}", filename, reason));
-                    AppLog.AppendDaily(AppLog.LevelErr, string.Format("批量打开文件失败: File={0}, Error={1}", filename, reason));
+                    failedFiles.Add(string.Format("{0}\n  Reason: {1}", filename, reason));
+                    AppLog.AppendDaily(AppLog.LevelErr, string.Format("Batch file open failed: File={0}, Error={1}", filename, reason));
                     if (!mdiForm.IsDisposed)
                         mdiForm.Close();
                     continue;
@@ -457,9 +457,9 @@ namespace SnakeTail
 
                 if (mdiForm.IsDisposed)
                 {
-                    string reason = string.IsNullOrEmpty(mdiForm.LastLoadFailureReason) ? "加载过程中窗口被关闭（未返回详细原因）" : mdiForm.LastLoadFailureReason;
-                    failedFiles.Add(string.Format("{0}\n  原因: {1}", filename, reason));
-                    AppLog.AppendDaily(AppLog.LevelWarn, string.Format("批量打开文件未完成: File={0}, Reason={1}", filename, reason));
+                    string reason = string.IsNullOrEmpty(mdiForm.LastLoadFailureReason) ? "The window was closed during loading (no detailed reason returned)" : mdiForm.LastLoadFailureReason;
+                    failedFiles.Add(string.Format("{0}\n  Reason: {1}", filename, reason));
+                    AppLog.AppendDaily(AppLog.LevelWarn, string.Format("Batch file open did not complete: File={0}, Reason={1}", filename, reason));
                     continue;
                 }
 
@@ -475,13 +475,13 @@ namespace SnakeTail
                         fullPath = Path.Combine(configPath, filename);
                     }
 
-                    // 添加到菜单
+                    // Add to the menu
                     if (_mruMenu != null)
                     {
                         _mruMenu.AddFile(fullPath);
                     }
 
-                    // 保存到 SQLite（如果可用）
+                    // Save to SQLite (if available)
                     if (_storage != null)
                     {
                         _storage.AddFile(fullPath);
@@ -499,15 +499,15 @@ namespace SnakeTail
 
             if (failedFiles.Count > 0)
             {
-                string summary = string.Format("共选择 {0} 个文件，成功 {1} 个，失败 {2} 个。", filenames.Length, filesOpened, failedFiles.Count);
+                string summary = string.Format("{0} file(s) selected: {1} succeeded, {2} failed.", filenames.Length, filesOpened, failedFiles.Count);
                 string detail = string.Join("\n\n", failedFiles.ToArray());
-                MessageBox.Show(this, summary + "\n\n失败详情：\n\n" + detail, "批量打开结果", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show(this, summary + "\n\nFailure details:\n\n" + detail, "Batch Open Results", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
             return filesOpened;
         }
 
         /// <summary>
-        /// 确保默认 Tail 配置已初始化，便于复用打开逻辑。
+        /// Ensures the default Tail config is initialized so the open logic can be reused.
         /// </summary>
         private void EnsureDefaultTailConfig()
         {
@@ -527,7 +527,7 @@ namespace SnakeTail
         }
 
         /// <summary>
-        /// 克隆 Tail 配置，避免多窗口共享可变对象。
+        /// Clones a Tail config so multiple windows don't share a mutable object.
         /// </summary>
         private static TailFileConfig CloneTailFileConfig(TailFileConfig source)
         {
@@ -566,7 +566,7 @@ namespace SnakeTail
                 QuickInverse = source.QuickInverse
             };
 
-            // 复制列表，避免跨窗口共享集合引用。
+            // Copy the list so collection references aren't shared across windows.
             if (source.ColumnFilters != null)
             {
                 clone.ColumnFilters = new List<List<string>>(source.ColumnFilters.Count);
@@ -595,7 +595,7 @@ namespace SnakeTail
         }
 
         /// <summary>
-        /// 克隆关键字配置，隔离运行时字段。
+        /// Clones a keyword config, isolating runtime fields.
         /// </summary>
         private static TailKeywordConfig CloneKeyword(TailKeywordConfig source)
         {
@@ -614,7 +614,7 @@ namespace SnakeTail
         }
 
         /// <summary>
-        /// 克隆外部工具配置，避免共享同一实例。
+        /// Clones an external tool config so the same instance isn't shared.
         /// </summary>
         private static ExternalToolConfig CloneExternalTool(ExternalToolConfig source)
         {
@@ -631,8 +631,8 @@ namespace SnakeTail
         }
 
         /// <summary>
-        /// 若某路径已在当前窗口的某个 Tab（TailForm）中打开则激活该 Tab，否则新建 Tab 打开。
-        /// 用于单实例：第二进程通过管道传来路径时调用。
+        /// If the path is already open in a tab (TailForm) of the current window, activates that tab; otherwise opens it in a new tab.
+        /// Used for single instance: called when a second process passes a path through the pipe.
         /// </summary>
         public void OpenFileOrActivateTab(string[] filenames)
         {
@@ -685,7 +685,7 @@ namespace SnakeTail
                 OpenFileSelection(toOpen.ToArray());
         }
 
-        /// <summary>由单实例管道线程调用：将主窗口置前并打开或激活指定文件。</summary>
+        /// <summary>Called by the single-instance pipe thread: brings the main window to the front and opens or activates the given files.</summary>
         public void BringToFrontAndOpenOrActivateTab(string[] filenames)
         {
             if (IsDisposed || !IsHandleCreated)
@@ -720,7 +720,7 @@ namespace SnakeTail
         {
             if ((_MDITabControl.SelectedTab != null) && (_MDITabControl.SelectedTab.Tag != null))
             {
-                // 切到该页即视为已读，清除红点。
+                // Switching to the tab counts as read; clear the red dot.
                 SetMdiTabChanged(_MDITabControl.SelectedTab.Tag as Form, false);
                 SuspendLayout();
                 (_MDITabControl.SelectedTab.Tag as Form).SuspendLayout();
@@ -803,7 +803,7 @@ namespace SnakeTail
 
             if (changed)
             {
-                // 红点表示“当前未查看到的文件变更”。
+                // The red dot means "file changes not yet viewed".
                 int dotSize = 8;
                 int dotX = bounds.Right - dotSize - 6;
                 int dotY = bounds.Top + (bounds.Height - dotSize) / 2;
@@ -893,7 +893,7 @@ namespace SnakeTail
         private void loadSessionToolStripMenuItem_Click(object sender, EventArgs e)
         {
             OpenFileDialog openFileDialog = new OpenFileDialog();
-            // 允许一次选择多个会话文件并按顺序加载。
+            // Allow selecting multiple session files at once and loading them in order.
             openFileDialog.Multiselect = true;
             openFileDialog.Filter = "Xml files (*.xml)|*.xml|All files (*.*)|*.*";
             if (openFileDialog.ShowDialog(this) == DialogResult.OK)
@@ -908,17 +908,17 @@ namespace SnakeTail
                     }
                     else
                     {
-                        string reason = string.IsNullOrEmpty(_lastSessionLoadErrorReason) ? "会话加载失败（未返回详细原因）" : _lastSessionLoadErrorReason;
-                        failedSessions.Add(string.Format("{0}\n  原因: {1}", sessionFile, reason));
-                        AppLog.AppendDaily(AppLog.LevelErr, string.Format("批量打开会话失败: Session={0}, Error={1}", sessionFile, reason));
+                        string reason = string.IsNullOrEmpty(_lastSessionLoadErrorReason) ? "Session load failed (no detailed reason returned)" : _lastSessionLoadErrorReason;
+                        failedSessions.Add(string.Format("{0}\n  Reason: {1}", sessionFile, reason));
+                        AppLog.AppendDaily(AppLog.LevelErr, string.Format("Batch session open failed: Session={0}, Error={1}", sessionFile, reason));
                     }
                 }
 
                 if (failedSessions.Count > 0)
                 {
-                    string summary = string.Format("共选择 {0} 个会话，成功 {1} 个，失败 {2} 个。", openFileDialog.FileNames.Length, loadedCount, failedSessions.Count);
+                    string summary = string.Format("{0} session(s) selected: {1} succeeded, {2} failed.", openFileDialog.FileNames.Length, loadedCount, failedSessions.Count);
                     string detail = string.Join("\n\n", failedSessions.ToArray());
-                    MessageBox.Show(this, summary + "\n\n失败详情：\n\n" + detail, "批量打开会话结果", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    MessageBox.Show(this, summary + "\n\nFailure details:\n\n" + detail, "Batch Open Session Results", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 }
             }
         }
@@ -998,7 +998,7 @@ namespace SnakeTail
         }
 
         /// <summary>
-        /// 将会话保存到指定 XML 文件（仅用于“另存为”）
+        /// Saves the session to the given XML file (only used for "Save As")
         /// </summary>
         public void SaveConfig(TailConfig tailConfig, string filepath)
         {
@@ -1048,14 +1048,14 @@ namespace SnakeTail
             {
                 string errorMsg = BuildExceptionMessage(ex);
                 _lastSessionLoadErrorReason = errorMsg;
-                AppLog.AppendDaily(AppLog.LevelErr, string.Format("打开会话文件失败: File={0}, Error={1}", filepath, errorMsg));
+                AppLog.AppendDaily(AppLog.LevelErr, string.Format("Failed to open session file: File={0}, Error={1}", filepath, errorMsg));
                 MessageBox.Show(this, "Failed to open session xml file, please ensure it is valid file:\n\n   " + filepath + "\n\n" + errorMsg, "", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return null;
             }
         }
 
         /// <summary>
-        /// 拼接异常链信息，确保失败原因精确可追踪。
+        /// Concatenates the exception chain so the failure reason is precise and traceable.
         /// </summary>
         private static string BuildExceptionMessage(Exception ex)
         {
@@ -1090,7 +1090,7 @@ namespace SnakeTail
         }
 
         /// <summary>
-        /// 从 xSnakeTail.db 加载上次会话
+        /// Loads the last session from xSnakeTail.db
         /// </summary>
         private void LoadSessionFromDb()
         {
@@ -1098,34 +1098,34 @@ namespace SnakeTail
             if (tailConfig == null)
                 return;
 
-            // 启动时优先使用工作目录下的 config，不存在时回退到 exe 目录。
+            // At startup prefer config under the working directory; fall back to the exe directory if it doesn't exist.
             string basePath = ResolveStartupConfigBasePath();
             LoadSessionWithConfig(tailConfig, basePath);
         }
 
         /// <summary>
-        /// 解析启动时配置基路径：优先工作目录，其次 exe 目录。
+        /// Resolves the startup config base path: working directory first, then the exe directory.
         /// </summary>
         private static string ResolveStartupConfigBasePath()
         {
-            // 先检查当前工作目录是否包含 config。
+            // First check whether the current working directory contains config.
             string currentDirectory = Directory.GetCurrentDirectory();
             string currentConfigPath = Path.Combine(currentDirectory, "config");
             if (Directory.Exists(currentConfigPath))
                 return currentDirectory;
 
-            // 工作目录缺失时，再检查 exe 所在目录是否包含 config。
+            // If the working directory lacks it, check whether the exe's directory contains config.
             string executableDirectory = Path.GetDirectoryName(Application.ExecutablePath) ?? string.Empty;
             string executableConfigPath = Path.Combine(executableDirectory, "config");
             if (!string.IsNullOrEmpty(executableDirectory) && Directory.Exists(executableConfigPath))
                 return executableDirectory;
 
-            // 两处都不存在时，保持工作目录行为，避免路径突变。
+            // If neither has it, keep the working directory behavior to avoid a sudden path change.
             return currentDirectory;
         }
 
         /// <summary>
-        /// 将会话保存到 xSnakeTail.db
+        /// Saves the session to xSnakeTail.db
         /// </summary>
         private void SaveSessionToDb()
         {
@@ -1371,11 +1371,11 @@ namespace SnakeTail
             {
                 try
                 {
-                    // 尝试获取文件列表以验证权限
+                    // Try to get the file list to verify permissions
                     Array array = e.Data.GetData(DataFormats.FileDrop) as Array;
                     if (array != null && array.Length > 0)
                     {
-                        // 检查第一个文件是否可访问（不实际打开，只检查路径）
+                        // Check whether the first file is accessible (don't actually open it, just check the path)
                         string firstFile = array.GetValue(0).ToString();
                         if (!string.IsNullOrEmpty(firstFile) && System.IO.Path.IsPathRooted(firstFile))
                         {
@@ -1386,7 +1386,7 @@ namespace SnakeTail
                 }
                 catch
                 {
-                    // 如果权限检查失败，仍然允许拖拽，让 DragDrop 处理错误
+                    // If the permission check fails, still allow the drag and let DragDrop handle the error
                 }
                 e.Effect = DragDropEffects.Copy;
             }
@@ -1436,7 +1436,7 @@ namespace SnakeTail
             {
                 try
                 {
-                    // 验证文件路径和权限
+                    // Validate file paths and permissions
                     List<string> validFiles = new List<string>();
                     List<string> invalidFiles = new List<string>();
 
@@ -1447,33 +1447,33 @@ namespace SnakeTail
                             if (string.IsNullOrEmpty(filename))
                                 continue;
 
-                            // 检查路径是否有效
+                            // Check whether the path is valid
                             if (!System.IO.Path.IsPathRooted(filename))
                             {
                                 invalidFiles.Add(filename);
                                 continue;
                             }
 
-                            // 尝试访问文件信息以验证权限
-                            // 对于目录，检查是否存在
+                            // Try to access the file info to verify permissions
+                            // For directories, check that they exist
                             if (System.IO.Directory.Exists(filename))
                             {
-                                // 目录暂时不支持，跳过
+                                // Directories aren't supported yet, skip
                                 continue;
                             }
 
-                            // 对于文件，检查是否存在或是否可以访问
+                            // For files, check whether they exist or can be accessed
                             if (System.IO.File.Exists(filename))
                             {
-                                // 尝试获取文件信息以验证权限
+                                // Try to get the file info to verify permissions
                                 System.IO.FileInfo fileInfo = new System.IO.FileInfo(filename);
-                                // 如果文件存在但无法访问，会在 OpenFileSelection 中处理
+                                // If the file exists but can't be accessed, OpenFileSelection handles it
                                 validFiles.Add(filename);
                             }
                             else
                             {
-                                // 文件不存在，但可能是新文件或需要特殊权限
-                                // 尝试检查父目录权限
+                                // The file doesn't exist, but it may be a new file or need special permissions
+                                // Try checking the parent directory's permissions
                                 string dir = System.IO.Path.GetDirectoryName(filename);
                                 if (!string.IsNullOrEmpty(dir) && System.IO.Directory.Exists(dir))
                                 {
@@ -1487,11 +1487,11 @@ namespace SnakeTail
                         }
                         catch (System.UnauthorizedAccessException)
                         {
-                            invalidFiles.Add(filename + " (权限不足)");
+                            invalidFiles.Add(filename + " (insufficient permissions)");
                         }
                         catch (System.Security.SecurityException)
                         {
-                            invalidFiles.Add(filename + " (安全权限不足)");
+                            invalidFiles.Add(filename + " (insufficient security permissions)");
                         }
                         catch (Exception ex)
                         {
@@ -1499,22 +1499,22 @@ namespace SnakeTail
                         }
                     }
 
-                    // 打开有效的文件
+                    // Open the valid files
                     if (validFiles.Count > 0)
                     {
                         OpenFileSelection(validFiles.ToArray());
                     }
 
-                    // 显示无效文件的错误消息
+                    // Show an error message for the invalid files
                     if (invalidFiles.Count > 0)
                     {
-                        string errorMsg = "以下文件无法打开：\n\n" + string.Join("\n", invalidFiles.ToArray());
-                        MessageBox.Show(this, errorMsg, "文件拖拽失败", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        string errorMsg = "The following files could not be opened:\n\n" + string.Join("\n", invalidFiles.ToArray());
+                        MessageBox.Show(this, errorMsg, "File Drop Failed", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     }
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show(this, "打开文件时发生错误：\n\n" + ex.Message, "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show(this, "An error occurred while opening the files:\n\n" + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }), new object[] { param });
         }
@@ -1579,7 +1579,7 @@ namespace SnakeTail
         {
             try
             {
-                // 自动保存当前会话到 xSnakeTail.db（不再写入 XML）
+                // Automatically save the current session to xSnakeTail.db (no longer written to XML)
                 try
                 {
                     bool hasOpenFiles = false;
@@ -1597,10 +1597,10 @@ namespace SnakeTail
                 }
                 catch
                 {
-                    // 忽略保存会话的错误，不影响程序关闭
+                    // Ignore session save errors; they must not block closing the program
                 }
 
-                // 清理不存在的文件记录并释放 SQLite 资源
+                // Remove records of files that no longer exist and release SQLite resources
                 if (_storage != null)
                 {
                     try
@@ -1609,7 +1609,7 @@ namespace SnakeTail
                     }
                     catch
                     {
-                        // 忽略清理错误
+                        // Ignore cleanup errors
                     }
 
                     try
@@ -1618,7 +1618,7 @@ namespace SnakeTail
                     }
                     catch
                     {
-                        // 忽略释放错误
+                        // Ignore release errors
                     }
                     finally
                     {
@@ -1628,19 +1628,19 @@ namespace SnakeTail
             }
             catch(Exception ex)
             {
-                // 关闭阶段也尽量绑定 owner，避免弹窗丢失焦点
+                // Bind an owner during shutdown too, so the dialog doesn't lose focus
                 try
                 {
                     MessageBox.Show(DialogOwner.Resolve(), "Failed to save list of recently used files.\n\n" + ex.Message, "", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
                 catch
                 {
-                    // 如果 MessageBox 也失败，则完全忽略
+                    // If MessageBox fails too, ignore it completely
                 }
             }
             finally
             {
-                // 最后才将 _instance 设置为 null，确保异常处理可以访问它
+                // Set _instance to null only at the very end, so exception handling can still access it
                 _instance = null;
             }
         }

@@ -1,15 +1,15 @@
 <Project>
-  <!-- 主程序编译临时输出统一放到 .temp -->
+  <!-- Put the main program's intermediate build output under .temp -->
   <PropertyGroup Condition="'$(MSBuildProjectName)' == 'SnakeTail'">
     <BaseOutputPath>$(MSBuildThisFileDirectory).temp\bin\</BaseOutputPath>
     <BaseIntermediateOutputPath>$(MSBuildThisFileDirectory).temp\obj\</BaseIntermediateOutputPath>
   </PropertyGroup>
-  <!-- 测试项目编译临时输出统一放到 .temp -->
+  <!-- Put the test project's intermediate build output under .temp -->
   <PropertyGroup Condition="'$(MSBuildProjectName)' == 'SnakeTail.Tests'">
     <BaseOutputPath>$(MSBuildThisFileDirectory).temp\bin\SnakeTail.Tests\</BaseOutputPath>
     <BaseIntermediateOutputPath>$(MSBuildThisFileDirectory).temp\obj\SnakeTail.Tests\</BaseIntermediateOutputPath>
   </PropertyGroup>
-  <!-- 插件项目编译临时输出统一放到 .temp -->
+  <!-- Put the plugin project's intermediate build output under .temp -->
   <PropertyGroup Condition="'$(MSBuildProjectName)' == 'LongMaidDisplayPlugin'">
     <BaseOutputPath>$(MSBuildThisFileDirectory).temp\bin\LongMaidDisplayPlugin\</BaseOutputPath>
     <BaseIntermediateOutputPath>$(MSBuildThisFileDirectory).temp\obj\LongMaidDisplayPlugin\</BaseIntermediateOutputPath>

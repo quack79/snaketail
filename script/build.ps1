@@ -1,32 +1,32 @@
-# 功能说明：构建主程序与插件，默认 Debug，传 --release 时构建 Release
+# Purpose: build the main program and plugin; Debug by default, Release when --release is passed
 
-# 参数定义
+# Parameters
 param(
     [switch]$Release
 )
 
-# 兼容 --release 写法（PowerShell 7+ 会把 --release 解析为 $args 而非 switch）
+# Support the --release style (PowerShell 7+ parses --release into $args rather than a switch)
 if ($args -contains '--release' -or $args -contains 'release') { $Release = $true }
 
-# 错误处理
+# Error handling
 $ErrorActionPreference = "Stop"
 trap {
-    Write-Host "命令行被中止: $($_.Exception.Message)" -ForegroundColor Red
+    Write-Host "Command aborted: $($_.Exception.Message)" -ForegroundColor Red
     Write-Host "$($_.InvocationInfo.ScriptName):$($_.InvocationInfo.ScriptLineNumber)" -ForegroundColor Red
     exit 1
 }
 
-# 路径与配置
+# Paths and configuration
 $config = if ($Release) { "Release" } else { "Debug" }
 $repoRoot = Split-Path -Parent $PSScriptRoot
 $mainOutDir = Join-Path $repoRoot ".run"
-$pluginOutDir = Join-Path $repoRoot ".run\config\plugins\龙女仆"
-# 固定目标运行时为 Windows x64
+$pluginOutDir = Join-Path $repoRoot ".run\config\plugins\DragonMaid"
+# Pin the target runtime to Windows x64
 $runtimeIdentifier = "win-x64"
-# 兼容包内公共 Windows 资源目录
+# Shared Windows resource directories inside packages
 $runtimeKeepNames = @("win", "win-x64")
 
-# 清理非 Windows x64 运行时目录
+# Remove non-Windows-x64 runtime directories
 function Remove-NonWinX64Runtimes {
     param(
         [Parameter(Mandatory = $true)]
@@ -42,14 +42,14 @@ function Remove-NonWinX64Runtimes {
     }
 }
 
-# 对主目录与插件目录统一做最终清理
+# Final cleanup of both the main and plugin directories
 function Normalize-RuntimesForWinX64 {
     foreach ($dir in @($mainOutDir, $pluginOutDir)) {
         Remove-NonWinX64Runtimes -TargetDir $dir
     }
 }
 
-# 清理插件目录中的主程序及无关产物
+# Remove main program and unrelated artifacts from the plugin directory
 function Keep-OnlyPluginArtifacts {
     $keepFileNames = @(
         "LongMaidDisplayPlugin.dll",
@@ -67,36 +67,36 @@ function Keep-OnlyPluginArtifacts {
     }
 }
 
-# 确保主程序与插件输出目录存在
+# Make sure the main program and plugin output directories exist
 foreach ($dir in @($mainOutDir, $pluginOutDir)) {
     if (-not (Test-Path -LiteralPath $dir)) {
         New-Item -ItemType Directory -Path $dir -Force | Out-Null
     }
 }
 $buildProjects = @(
-    @{ Name = "主程序"; Path = (Join-Path $repoRoot "src\SnakeTail.csproj"); OutDir = $mainOutDir; ExtraArgs = @("/property:OutDir=$mainOutDir\", "/property:RuntimeIdentifier=$runtimeIdentifier", "/property:PlatformTarget=x64") },
-    @{ Name = "龙女仆插件"; Path = (Join-Path $repoRoot "plugins\LongMaidDisplayPlugin\LongMaidDisplayPlugin.csproj"); OutDir = $pluginOutDir; ExtraArgs = @("/property:OutDir=$pluginOutDir\", "/property:RuntimeIdentifier=$runtimeIdentifier", "/property:PlatformTarget=x64") }
+    @{ Name = "main program"; Path = (Join-Path $repoRoot "src\SnakeTail.csproj"); OutDir = $mainOutDir; ExtraArgs = @("/property:OutDir=$mainOutDir\", "/property:RuntimeIdentifier=$runtimeIdentifier", "/property:PlatformTarget=x64") },
+    @{ Name = "DragonMaid plugin"; Path = (Join-Path $repoRoot "plugins\LongMaidDisplayPlugin\LongMaidDisplayPlugin.csproj"); OutDir = $pluginOutDir; ExtraArgs = @("/property:OutDir=$pluginOutDir\", "/property:RuntimeIdentifier=$runtimeIdentifier", "/property:PlatformTarget=x64") }
 )
 
-Write-Host "构建配置: $config" -ForegroundColor Cyan
+Write-Host "Build configuration: $config" -ForegroundColor Cyan
 
-# 依次构建主程序与插件
+# Build the main program, then the plugin
 foreach ($item in $buildProjects) {
     if (-not (Test-Path -LiteralPath $item.Path)) {
-        throw "构建失败：未找到项目文件（$($item.Name)）`n路径: $($item.Path)"
+        throw "Build failed: project file not found ($($item.Name))`nPath: $($item.Path)"
     }
 
-    Write-Host "正在构建: $($item.Name)" -ForegroundColor Cyan
-    # 产物输出到 .run 目录结构
+    Write-Host "Building: $($item.Name)" -ForegroundColor Cyan
+    # Output goes into the .run directory structure
     dotnet build $item.Path --configuration $config --nologo --verbosity quiet /property:GenerateFullPaths=true @($item.ExtraArgs)
     if ($LASTEXITCODE -ne 0) {
-        throw "构建失败：$($item.Name)（退出码 $LASTEXITCODE）`n项目: $($item.Path)"
+        throw "Build failed: $($item.Name) (exit code $LASTEXITCODE)`nProject: $($item.Path)"
     }
 }
 
-# 清理无关平台运行时资产（最终态）
+# Remove runtime assets for unrelated platforms (final state)
 Normalize-RuntimesForWinX64
-# 插件目录仅保留插件产物
+# Keep only plugin artifacts in the plugin directory
 Keep-OnlyPluginArtifacts
 
-Write-Host "构建完成." -ForegroundColor Green
+Write-Host "Build complete." -ForegroundColor Green

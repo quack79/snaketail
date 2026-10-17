@@ -10,7 +10,7 @@ public class LogFileStreamAppendDetectionTests
     [Fact]
     public void ReadLine_should_pick_up_appended_line_after_reaching_eof()
     {
-        // 到达 EOF 后追加新行，下一次读取应能命中新内容。
+        // After reaching EOF, append new lines; the next read should pick up the new content.
         string tempDir = CreateTempDir();
         string filePath = Path.Combine(tempDir, "append.log");
         try
@@ -61,7 +61,7 @@ public class LogFileStreamAppendDetectionTests
         }
         catch
         {
-            // 测试收尾清理失败不影响断言结果。
+            // A failed test cleanup doesn't affect the assertion results.
         }
     }
 }

@@ -197,7 +197,7 @@ UpgradeLog*.htm
 # Microsoft Fakes
 FakesAssemblies/
 
-# 本仓库约定：构建产物与本地运行目录
+# Repo convention: build output and local run directories
 .temp/
 .dist/
 .run/

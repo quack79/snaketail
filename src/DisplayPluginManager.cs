@@ -7,7 +7,7 @@ using System.Reflection;
 namespace SnakeTail
 {
     /// <summary>
-    /// 已加载的显示插件信息。
+    /// Information about a loaded display plugin.
     /// </summary>
     internal sealed class LoadedDisplayPlugin
     {
@@ -30,7 +30,7 @@ namespace SnakeTail
     }
 
     /// <summary>
-    /// 显示插件管理器：负责扫描、装载、实例化与初始化。
+    /// Display plugin manager: scans, loads, instantiates and initializes plugins.
     /// </summary>
     internal sealed class DisplayPluginManager
     {
@@ -46,7 +46,7 @@ namespace SnakeTail
         public IReadOnlyList<LoadedDisplayPlugin> AvailablePlugins => _availablePlugins;
 
         /// <summary>
-        /// 重新扫描插件目录，并构建可用插件列表。
+        /// Rescans the plugin directory and builds the list of available plugins.
         /// </summary>
         public void Reload(string currentLogFilePath)
         {
@@ -67,7 +67,7 @@ namespace SnakeTail
                 {
                     if (_pluginsByName.ContainsKey(loadedPlugin.DisplayName))
                     {
-                        AppLog.AppendDaily(AppLog.LevelWarn, string.Format("显示插件重名已忽略: Name={0}, Directory={1}", loadedPlugin.DisplayName, loadedPlugin.PluginDirectoryPath));
+                        AppLog.AppendDaily(AppLog.LevelWarn, string.Format("Duplicate display plugin name ignored: Name={0}, Directory={1}", loadedPlugin.DisplayName, loadedPlugin.PluginDirectoryPath));
                         continue;
                     }
 
@@ -78,7 +78,7 @@ namespace SnakeTail
         }
 
         /// <summary>
-        /// 根据显示名查找插件实例。
+        /// Finds a plugin instance by display name.
         /// </summary>
         public LoadedDisplayPlugin FindByDisplayName(string displayName)
         {
@@ -90,7 +90,7 @@ namespace SnakeTail
         }
 
         /// <summary>
-        /// 解析插件根目录（config/plugins）。
+        /// Resolves the plugin root directory (config/plugins).
         /// </summary>
         internal string GetPluginRootPath()
         {
@@ -100,7 +100,7 @@ namespace SnakeTail
         }
 
         /// <summary>
-        /// 扫描单个插件目录，按规则加载首个合法插件。
+        /// Scans a single plugin directory and loads the first valid plugin by the rules.
         /// </summary>
         internal bool TryLoadPluginDirectory(string pluginDirectoryPath, string pluginDirectoryName, string currentLogFilePath, out LoadedDisplayPlugin loadedPlugin)
         {
@@ -113,13 +113,13 @@ namespace SnakeTail
             }
             catch (Exception ex)
             {
-                AppLog.AppendDaily(AppLog.LevelErr, string.Format("扫描插件目录失败: Directory={0}, Error={1}: {2}", pluginDirectoryPath, ex.GetType().FullName, ex.Message));
+                AppLog.AppendDaily(AppLog.LevelErr, string.Format("Failed to scan plugin directory: Directory={0}, Error={1}: {2}", pluginDirectoryPath, ex.GetType().FullName, ex.Message));
                 return false;
             }
 
             if (dllFiles.Length == 0)
             {
-                AppLog.AppendDaily(AppLog.LevelWarn, string.Format("插件目录未发现 DLL: Directory={0}", pluginDirectoryPath));
+                AppLog.AppendDaily(AppLog.LevelWarn, string.Format("No DLL found in plugin directory: Directory={0}", pluginDirectoryPath));
                 return false;
             }
 
@@ -129,12 +129,12 @@ namespace SnakeTail
                     return true;
             }
 
-            AppLog.AppendDaily(AppLog.LevelWarn, string.Format("插件目录未发现 ILogDisplayPlugin 实现: Directory={0}", pluginDirectoryPath));
+            AppLog.AppendDaily(AppLog.LevelWarn, string.Format("No ILogDisplayPlugin implementation found in plugin directory: Directory={0}", pluginDirectoryPath));
             return false;
         }
 
         /// <summary>
-        /// 从 DLL 加载并初始化插件。
+        /// Loads and initializes a plugin from a DLL.
         /// </summary>
         private bool TryLoadPluginFromAssembly(string assemblyPath, string pluginDirectoryPath, string pluginDirectoryName, string currentLogFilePath, out LoadedDisplayPlugin loadedPlugin)
         {
@@ -147,7 +147,7 @@ namespace SnakeTail
             }
             catch (Exception ex)
             {
-                AppLog.AppendDaily(AppLog.LevelErr, string.Format("加载插件 DLL 失败: Dll={0}, Error={1}: {2}", assemblyPath, ex.GetType().FullName, ex.Message));
+                AppLog.AppendDaily(AppLog.LevelErr, string.Format("Failed to load plugin DLL: Dll={0}, Error={1}: {2}", assemblyPath, ex.GetType().FullName, ex.Message));
                 return false;
             }
 
@@ -155,7 +155,7 @@ namespace SnakeTail
             {
                 if (!string.IsNullOrEmpty(createError))
                 {
-                    AppLog.AppendDaily(AppLog.LevelErr, string.Format("创建插件实例失败: Dll={0}, Error={1}", assemblyPath, createError));
+                    AppLog.AppendDaily(AppLog.LevelErr, string.Format("Failed to create plugin instance: Dll={0}, Error={1}", assemblyPath, createError));
                 }
                 return false;
             }
@@ -173,21 +173,21 @@ namespace SnakeTail
             {
                 string pluginName = GetPluginDisplayName(plugin, pluginDirectoryName);
                 string unavailableReason = BuildMissingConfigReason(ex);
-                AppLog.AppendDaily(AppLog.LevelWarn, string.Format("插件缺少配置文件，暂不可启用: Dll={0}, Plugin={1}, Reason={2}", assemblyPath, pluginName, unavailableReason));
+                AppLog.AppendDaily(AppLog.LevelWarn, string.Format("Plugin is missing a config file and cannot be enabled yet: Dll={0}, Plugin={1}, Reason={2}", assemblyPath, pluginName, unavailableReason));
                 loadedPlugin = new LoadedDisplayPlugin(pluginDirectoryName, pluginDirectoryPath, pluginName, null, false, unavailableReason);
                 return true;
             }
             catch (DirectoryNotFoundException ex)
             {
                 string pluginName = GetPluginDisplayName(plugin, pluginDirectoryName);
-                string unavailableReason = string.Format("缺少配置目录：{0}", ex.Message);
-                AppLog.AppendDaily(AppLog.LevelWarn, string.Format("插件缺少配置目录，暂不可启用: Dll={0}, Plugin={1}, Reason={2}", assemblyPath, pluginName, unavailableReason));
+                string unavailableReason = string.Format("Missing config directory: {0}", ex.Message);
+                AppLog.AppendDaily(AppLog.LevelWarn, string.Format("Plugin is missing a config directory and cannot be enabled yet: Dll={0}, Plugin={1}, Reason={2}", assemblyPath, pluginName, unavailableReason));
                 loadedPlugin = new LoadedDisplayPlugin(pluginDirectoryName, pluginDirectoryPath, pluginName, null, false, unavailableReason);
                 return true;
             }
             catch (Exception ex)
             {
-                AppLog.AppendDaily(AppLog.LevelErr, string.Format("插件初始化失败: Dll={0}, Plugin={1}, Error={2}: {3}", assemblyPath, plugin.GetType().FullName, ex.GetType().FullName, ex.Message));
+                AppLog.AppendDaily(AppLog.LevelErr, string.Format("Plugin initialization failed: Dll={0}, Plugin={1}, Error={2}: {3}", assemblyPath, plugin.GetType().FullName, ex.GetType().FullName, ex.Message));
                 return false;
             }
 
@@ -196,7 +196,7 @@ namespace SnakeTail
             return true;
         }
 
-        // 统一解析插件显示名，避免重复空值分支。
+        // Resolves the plugin display name in one place, avoiding duplicate empty-value branches.
         private static string GetPluginDisplayName(ILogDisplayPlugin plugin, string pluginDirectoryName)
         {
             string pluginName = plugin != null ? plugin.Name : string.Empty;
@@ -205,18 +205,18 @@ namespace SnakeTail
             return pluginName;
         }
 
-        // 精确拼出缺失配置文件原因，供 UI 提示与日志复用。
+        // Builds the exact missing-config-file reason, shared by UI notices and logs.
         private static string BuildMissingConfigReason(FileNotFoundException ex)
         {
             string missingPath = ex.FileName;
             if (!string.IsNullOrWhiteSpace(missingPath))
-                return string.Format("{0}：{1}", ex.Message, missingPath);
+                return string.Format("{0}: {1}", ex.Message, missingPath);
 
             return ex.Message;
         }
 
         /// <summary>
-        /// 在程序集内查找首个可实例化插件类型。
+        /// Finds the first instantiable plugin type in the assembly.
         /// </summary>
         internal static bool TryCreatePluginInstance(Assembly assembly, out ILogDisplayPlugin plugin, out string error)
         {
@@ -233,7 +233,7 @@ namespace SnakeTail
                 IEnumerable<string> loaderMessages = ex.LoaderExceptions != null
                     ? ex.LoaderExceptions.Where(x => x != null).Select(x => x.GetType().FullName + ": " + x.Message)
                     : Enumerable.Empty<string>();
-                error = "反射类型加载失败: " + string.Join(" | ", loaderMessages);
+                error = "Reflection type load failed: " + string.Join(" | ", loaderMessages);
                 return false;
             }
             catch (Exception ex)

@@ -5,7 +5,7 @@ using System.Linq;
 namespace SnakeTail
 {
     /// <summary>
-    /// 显示文本处理器：按启用顺序串行执行插件并缓存结果。
+    /// Display text processor: runs plugins serially in enabled order and caches the results.
     /// </summary>
     internal sealed class DisplayTextProcessor
     {
@@ -15,7 +15,7 @@ namespace SnakeTail
         public IReadOnlyList<LoadedDisplayPlugin> EnabledPlugins => _enabledPlugins;
 
         /// <summary>
-        /// 更新启用插件顺序。
+        /// Updates the enabled plugin order.
         /// </summary>
         public void SetEnabledPlugins(IEnumerable<LoadedDisplayPlugin> plugins)
         {
@@ -26,7 +26,7 @@ namespace SnakeTail
         }
 
         /// <summary>
-        /// 清理处理缓存。
+        /// Clears the processing cache.
         /// </summary>
         public void ClearCache()
         {
@@ -34,7 +34,7 @@ namespace SnakeTail
         }
 
         /// <summary>
-        /// 获取处理后文本；无插件或不命中时返回原文。
+        /// Gets the processed text; returns the original text when there are no plugins or none match.
         /// </summary>
         public string GetProcessedLineText(int lineKey, string rawLineText, Func<int, string> readLineByLineKey = null)
         {
@@ -56,7 +56,7 @@ namespace SnakeTail
                 if (plugin == null)
                     continue;
 
-                // 块插件优先尝试收集整块文本，确保按插件顺序决定输入粒度。
+                // Block plugins try to collect the whole block first, so the input granularity is decided by plugin order.
                 string textForPlugin = currentText;
                 if (plugin is ILogDisplayBlockPlugin blockPlugin && readLineByLineKey != null)
                 {
@@ -70,7 +70,7 @@ namespace SnakeTail
                     }
                     catch (Exception ex)
                     {
-                        AppLog.AppendDaily(AppLog.LevelErr, string.Format("插件 TryCollectBlock 失败: Plugin={0}, LineKey={1}, Error={2}: {3}", loadedPlugin.DisplayName, lineKey, ex.GetType().FullName, ex.Message));
+                        AppLog.AppendDaily(AppLog.LevelErr, string.Format("Plugin TryCollectBlock failed: Plugin={0}, LineKey={1}, Error={2}: {3}", loadedPlugin.DisplayName, lineKey, ex.GetType().FullName, ex.Message));
                     }
                 }
 
@@ -81,7 +81,7 @@ namespace SnakeTail
                 }
                 catch (Exception ex)
                 {
-                    AppLog.AppendDaily(AppLog.LevelErr, string.Format("插件 CanProcess 失败: Plugin={0}, LineKey={1}, Error={2}: {3}", loadedPlugin.DisplayName, lineKey, ex.GetType().FullName, ex.Message));
+                    AppLog.AppendDaily(AppLog.LevelErr, string.Format("Plugin CanProcess failed: Plugin={0}, LineKey={1}, Error={2}: {3}", loadedPlugin.DisplayName, lineKey, ex.GetType().FullName, ex.Message));
                     continue;
                 }
 
@@ -95,18 +95,18 @@ namespace SnakeTail
                 }
                 catch (Exception ex)
                 {
-                    AppLog.AppendDaily(AppLog.LevelErr, string.Format("插件 TryProcess 失败: Plugin={0}, LineKey={1}, Error={2}: {3}", loadedPlugin.DisplayName, lineKey, ex.GetType().FullName, ex.Message));
+                    AppLog.AppendDaily(AppLog.LevelErr, string.Format("Plugin TryProcess failed: Plugin={0}, LineKey={1}, Error={2}: {3}", loadedPlugin.DisplayName, lineKey, ex.GetType().FullName, ex.Message));
                     continue;
                 }
 
                 if (!string.IsNullOrWhiteSpace(result.ErrorMessage))
                 {
-                    AppLog.AppendDaily(AppLog.LevelErr, string.Format("插件返回错误: Plugin={0}, LineKey={1}, Error={2}", loadedPlugin.DisplayName, lineKey, result.ErrorMessage));
+                    AppLog.AppendDaily(AppLog.LevelErr, string.Format("Plugin returned an error: Plugin={0}, LineKey={1}, Error={2}", loadedPlugin.DisplayName, lineKey, result.ErrorMessage));
                 }
 
                 if (result.Handled)
                 {
-                    // 块插件返回多行时，按原始行数把输出逐行回填到缓存，保持一一对应显示。
+                    // When a block plugin returns multiple lines, write the output back to the cache line by line by the raw line count, keeping a one-to-one display.
                     if (TryCacheBlockOutputByLine(lineKey, signature, textForPlugin, result.Output, out string currentLineOutput))
                     {
                         _lineCache[cacheKey] = currentLineOutput;
@@ -127,7 +127,7 @@ namespace SnakeTail
         }
 
         /// <summary>
-        /// 当块输入与块输出行数一致时，按行号写入缓存并返回当前行输出。
+        /// When the block input and output have the same line count, writes them to the cache by line number and returns the current line's output.
         /// </summary>
         private bool TryCacheBlockOutputByLine(int startLineKey, string signature, string blockInput, string blockOutput, out string currentLineOutput)
         {
@@ -155,7 +155,7 @@ namespace SnakeTail
         }
 
         /// <summary>
-        /// 返回当前启用插件顺序签名。
+        /// Returns the signature of the current enabled plugin order.
         /// </summary>
         public string GetEnabledSignature()
         {

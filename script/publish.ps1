@@ -1,10 +1,10 @@
-﻿# 功能说明：构建 Release 并将可发布文件复制到仓库根目录 .dist 下（带版本号子目录）
+﻿# Purpose: build Release and copy the publishable files to .dist under the repo root (in a versioned subdirectory)
 
 param()
 
 $ErrorActionPreference = "Stop"
 trap {
-    Write-Host "命令行被中止: $_" -ForegroundColor Red
+    Write-Host "Command aborted: $_" -ForegroundColor Red
     Write-Host "$($_.InvocationInfo.ScriptName):$($_.InvocationInfo.ScriptLineNumber)" -ForegroundColor Red
     exit 1
 }
@@ -14,16 +14,16 @@ function Publish-ReleaseToDist {
     $proj = Join-Path $repoRoot "src\SnakeTail.csproj"
     $raw = Get-Content -LiteralPath $proj -Raw -Encoding UTF8
     if ($raw -notmatch '<Version>([^<]+)</Version>') {
-        throw "无法从 csproj 解析 <Version>"
+        throw "Could not parse <Version> from the csproj"
     }
     $version = $Matches[1].Trim()
     $buildScript = Join-Path $repoRoot "script\build.ps1"
     & $buildScript -Release
-    if ($LASTEXITCODE -ne 0) { throw "Release 构建失败" }
+    if ($LASTEXITCODE -ne 0) { throw "Release build failed" }
 
     $outDir = Join-Path $repoRoot ".run"
     if (-not (Test-Path (Join-Path $outDir "SnakeTail.exe"))) {
-        throw "未找到构建输出: $outDir\SnakeTail.exe"
+        throw "Build output not found: $outDir\SnakeTail.exe"
     }
     $distRoot = Join-Path $repoRoot ".dist"
     $distDir = Join-Path $distRoot "SnakeTail-$version"
@@ -31,9 +31,9 @@ function Publish-ReleaseToDist {
         Remove-Item -LiteralPath $distDir -Recurse -Force
     }
     New-Item -ItemType Directory -Path $distDir -Force | Out-Null
-    # 排除运行日志目录，避免把本地日志带入发布包
+    # Exclude the run log directory so local logs don't end up in the release package
     Get-ChildItem -LiteralPath $outDir -Force | Where-Object { $_.Name -ne "log" } | Copy-Item -Destination $distDir -Recurse -Force
-    Write-Host "已发布到: $distDir" -ForegroundColor Green
+    Write-Host "Published to: $distDir" -ForegroundColor Green
 }
 
 Publish-ReleaseToDist

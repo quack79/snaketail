@@ -108,7 +108,7 @@ namespace JWC
 
 			this.maxEntries = maxEntries > 16 ? 16 : maxEntries;
 			this.clickedHandler = clickedHandler;
-			// 不使用注册表，持久化由主程序（如 SQLite）负责
+			// The registry is not used; persistence is handled by the main program (e.g. SQLite)
 		}
 
 		#endregion
@@ -633,7 +633,7 @@ namespace JWC
 
 		#endregion
 
-		#region Registry Methods (no-op: 不使用注册表，禁止写入)
+		#region Registry Methods (no-op: the registry is not used; writes are disabled)
 
 		public string RegistryKeyName
 		{
@@ -643,22 +643,22 @@ namespace JWC
 
 		public void LoadFromRegistry(string keyName)
 		{
-			// 不使用注册表，空实现
+			// The registry is not used; empty implementation
 		}
 
 		public void LoadFromRegistry()
 		{
-			// 不使用注册表，空实现
+			// The registry is not used; empty implementation
 		}
 
 		public void SaveToRegistry(string keyName)
 		{
-			// 不使用注册表，禁止写入
+			// The registry is not used; writes are disabled
 		}
 
 		public void SaveToRegistry()
 		{
-			// 不使用注册表，禁止写入
+			// The registry is not used; writes are disabled
 		}
 
         #region IDisposable Support

@@ -8,7 +8,7 @@ public class LogFileStreamSearchTests
     [Fact]
     public void SearchTextRange_should_return_minus_one_when_text_missing()
     {
-        // 未命中时应返回 -1。
+        // Should return -1 when there is no match.
         string tempRoot = Path.Combine(Path.GetTempPath(), "snaketail-search-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(tempRoot);
 
@@ -31,7 +31,7 @@ public class LogFileStreamSearchTests
     [Fact]
     public void SearchTextRange_should_return_last_match_when_requested()
     {
-        // 反向搜索依赖返回最后命中行。
+        // Reverse search relies on returning the last matching line.
         string tempRoot = Path.Combine(Path.GetTempPath(), "snaketail-search-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(tempRoot);
 

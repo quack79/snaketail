@@ -12,7 +12,7 @@ using System.Text;
 
 namespace SnakeTail
 {
-    /// <summary>应用日志：日常写入 YYYY-MM-DD.log，崩溃写入 YYYY-MM-DD_crash.log；路径相对于当前工作目录下的 log 子目录。</summary>
+    /// <summary>Application log: daily entries go to YYYY-MM-DD.log, crashes to YYYY-MM-DD_crash.log; paths are relative to the log subdirectory of the current working directory.</summary>
     internal static class AppLog
     {
         public const string LevelDebug = "DEBUG";
@@ -51,7 +51,7 @@ namespace SnakeTail
             }
             catch
             {
-                // 日志失败时静默，避免递归异常
+                // Stay silent if logging fails, to avoid recursive exceptions
             }
         }
 

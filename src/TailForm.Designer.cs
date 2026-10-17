@@ -239,7 +239,7 @@ namespace SnakeTail
             //
             this._copyToolStripMenuItem.Name = "_copyToolStripMenuItem";
             this._copyToolStripMenuItem.Size = new System.Drawing.Size(246, 22);
-            this._copyToolStripMenuItem.Text = "复制（处理后文本）";
+            this._copyToolStripMenuItem.Text = "Copy (Processed Text)";
             this._copyToolStripMenuItem.Click += new System.EventHandler(this._copyToolStripMenuItem_Click);
             //
             // findToolStripMenuItem
@@ -306,7 +306,7 @@ namespace SnakeTail
             //
             this._pluginsToolStripMenuItem.Name = "_pluginsToolStripMenuItem";
             this._pluginsToolStripMenuItem.Size = new System.Drawing.Size(246, 22);
-            this._pluginsToolStripMenuItem.Text = "插件";
+            this._pluginsToolStripMenuItem.Text = "Plugins";
             //
             // openContainingFolderToolStripMenuItem
             //
@@ -335,7 +335,7 @@ namespace SnakeTail
             this.clearLogToolStripMenuItem.Name = "clearLogToolStripMenuItem";
             this.clearLogToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.L)));
             this.clearLogToolStripMenuItem.Size = new System.Drawing.Size(246, 22);
-            this.clearLogToolStripMenuItem.Text = "清空";
+            this.clearLogToolStripMenuItem.Text = "Clear";
             this.clearLogToolStripMenuItem.Click += new System.EventHandler(this.clearLogToolStripMenuItem_Click);
             //
             // startServiceToolStripMenuItem
@@ -433,7 +433,7 @@ namespace SnakeTail
             //
             this._keywordLabel.Name = "_keywordLabel";
             this._keywordLabel.Size = new System.Drawing.Size(47, 22);
-            this._keywordLabel.Text = "关键字:";
+            this._keywordLabel.Text = "Keyword:";
             //
             // _keywordTextBox
             //
@@ -447,7 +447,7 @@ namespace SnakeTail
             this._highlightCheckBox.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
             this._highlightCheckBox.Name = "_highlightCheckBox";
             this._highlightCheckBox.Size = new System.Drawing.Size(35, 22);
-            this._highlightCheckBox.Text = "高亮";
+            this._highlightCheckBox.Text = "Highlight";
             this._highlightCheckBox.Click += new System.EventHandler(this._highlightCheckBox_Click);
             //
             // _highlightColorButton
@@ -455,7 +455,7 @@ namespace SnakeTail
             this._highlightColorButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
             this._highlightColorButton.Name = "_highlightColorButton";
             this._highlightColorButton.Size = new System.Drawing.Size(35, 22);
-            this._highlightColorButton.Text = "颜色";
+            this._highlightColorButton.Text = "Color";
             this._highlightColorButton.Click += new System.EventHandler(this._highlightColorButton_Click);
             //
             // _filterCheckBox
@@ -464,7 +464,7 @@ namespace SnakeTail
             this._filterCheckBox.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
             this._filterCheckBox.Name = "_filterCheckBox";
             this._filterCheckBox.Size = new System.Drawing.Size(35, 22);
-            this._filterCheckBox.Text = "过滤";
+            this._filterCheckBox.Text = "Filter";
             this._filterCheckBox.Click += new System.EventHandler(this._filterCheckBox_Click);
             //
             // _inverseCheckBox
@@ -473,12 +473,12 @@ namespace SnakeTail
             this._inverseCheckBox.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
             this._inverseCheckBox.Name = "_inverseCheckBox";
             this._inverseCheckBox.Size = new System.Drawing.Size(35, 22);
-            this._inverseCheckBox.Text = "反向";
+            this._inverseCheckBox.Text = "Invert";
             this._inverseCheckBox.Click += new System.EventHandler(this._inverseCheckBox_Click);
             //
             // _contentPanel
             //
-            // ListView 放在独立 Panel 中，避免 Dock.Fill 与顶部关键字栏叠层导致工具栏被盖住。
+            // The ListView sits in its own Panel so Dock.Fill can't overlap the top keyword bar and cover the toolbar.
             this._contentPanel.Controls.Add(this._tailListView);
             this._contentPanel.Dock = System.Windows.Forms.DockStyle.Fill;
             this._contentPanel.Location = new System.Drawing.Point(0, 25);

@@ -103,22 +103,22 @@ namespace SnakeTail
         List<int> _bookmarks = new List<int>();
         ThreadPoolQueue _threadPoolQueue = null;
 
-        // 关键字过滤和高亮相关字段
+        // Keyword filter and highlight fields
         string _quickKeyword = "";
         bool _quickHighlight = false;
         Color _quickHighlightColor = Color.Yellow;
         bool _quickFilter = false;
         bool _quickInverse = false;
-        Dictionary<int, int> _filteredIndexMap = new Dictionary<int, int>(); // 过滤后的虚拟索引到实际行号的映射
+        Dictionary<int, int> _filteredIndexMap = new Dictionary<int, int>(); // Maps filtered virtual indexes to actual line numbers
         int _filteredVirtualListSize = 0;
-        int _originalVirtualListSize = 0; // 保存原始列表大小
-        int _savedLineNumber = 0; // 保存的清空前的行号
-        // 显示插件相关字段
+        int _originalVirtualListSize = 0; // Saved original list size
+        int _savedLineNumber = 0; // Line number saved before clearing
+        // Display plugin fields
         DisplayPluginManager _displayPluginManager = null;
         DisplayTextProcessor _displayTextProcessor = new DisplayTextProcessor();
         List<LoadedDisplayPlugin> _availableDisplayPlugins = new List<LoadedDisplayPlugin>();
 
-        // 行内文字选择：双击先选词，再双击选整行；Ctrl+C 复制选中文字
+        // In-line text selection: double-click selects a word, double-click again selects the whole line; Ctrl+C copies the selected text
         string _inlineSelectionText = "";
         int _inlineSelectionItemIndex = -1;
         int _inlineSelectionStart = 0;
@@ -147,7 +147,7 @@ namespace SnakeTail
         }
 
         /// <summary>
-        /// 初始化显示插件并恢复当前文件启用状态。
+        /// Initializes display plugins and restores the current file's enabled state.
         /// </summary>
         private void InitializeDisplayPlugins(TailFileConfig tailConfig)
         {
@@ -167,11 +167,11 @@ namespace SnakeTail
                 }
                 else if (plugin != null)
                 {
-                    AppLog.AppendDaily(AppLog.LevelWarn, string.Format("配置引用的显示插件缺少配置文件，未启用: Plugin={0}, File={1}, Reason={2}", pluginName, tailConfig.FilePath, plugin.UnavailableReason));
+                    AppLog.AppendDaily(AppLog.LevelWarn, string.Format("Display plugin referenced by config is missing a config file and was not enabled: Plugin={0}, File={1}, Reason={2}", pluginName, tailConfig.FilePath, plugin.UnavailableReason));
                 }
                 else
                 {
-                    AppLog.AppendDaily(AppLog.LevelWarn, string.Format("配置引用的显示插件未找到，已忽略: Plugin={0}, File={1}", pluginName, tailConfig.FilePath));
+                    AppLog.AppendDaily(AppLog.LevelWarn, string.Format("Display plugin referenced by config not found, ignored: Plugin={0}, File={1}", pluginName, tailConfig.FilePath));
                 }
             }
 
@@ -181,7 +181,7 @@ namespace SnakeTail
         }
 
         /// <summary>
-        /// 重建插件菜单项并同步勾选状态。
+        /// Rebuilds the plugin menu items and syncs their checked state.
         /// </summary>
         private void RebuildPluginMenu()
         {
@@ -192,7 +192,7 @@ namespace SnakeTail
             {
                 string pluginMenuText = plugin.IsAvailable
                     ? plugin.DisplayName
-                    : string.Format("{0}（缺少配置）", plugin.DisplayName);
+                    : string.Format("{0} (missing config)", plugin.DisplayName);
                 ToolStripMenuItem pluginMenuItem = new ToolStripMenuItem(pluginMenuText);
                 pluginMenuItem.CheckOnClick = true;
                 pluginMenuItem.Checked = _displayTextProcessor.EnabledPlugins.Any(x => string.Equals(x.DisplayName, plugin.DisplayName, StringComparison.CurrentCultureIgnoreCase));
@@ -203,7 +203,7 @@ namespace SnakeTail
         }
 
         /// <summary>
-        /// 插件菜单点击：按点击顺序启用，取消则移除。
+        /// Plugin menu click: enables in click order; unchecking removes it.
         /// </summary>
         private void pluginMenuItem_Click(object sender, EventArgs e)
         {
@@ -217,16 +217,16 @@ namespace SnakeTail
             if (targetPlugin == null)
                 return;
 
-            // 缺少配置时给出精确提示，并撤销本次启用。
+            // When config is missing, show a precise message and undo this enable.
             if (menuItem.Checked && !targetPlugin.IsAvailable)
             {
                 menuItem.Checked = false;
                 string unavailableReason = string.IsNullOrWhiteSpace(targetPlugin.UnavailableReason)
-                    ? "缺少插件所需配置文件。"
+                    ? "The plugin's required config file is missing."
                     : targetPlugin.UnavailableReason;
                 MessageBox.Show(this,
-                    string.Format("插件“{0}”无法启用。\n\n原因：{1}", targetPlugin.DisplayName, unavailableReason),
-                    "插件启用失败",
+                    string.Format("Plugin \"{0}\" cannot be enabled.\n\nReason: {1}", targetPlugin.DisplayName, unavailableReason),
+                    "Plugin Enable Failed",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Warning);
                 return;
@@ -253,7 +253,7 @@ namespace SnakeTail
         }
 
         /// <summary>
-        /// 将当前启用插件顺序写回配置对象。
+        /// Writes the current enabled plugin order back to the config object.
         /// </summary>
         private void SyncEnabledPluginsToConfig()
         {
@@ -266,7 +266,7 @@ namespace SnakeTail
         }
 
         /// <summary>
-        /// 清理处理后文本缓存。
+        /// Clears the processed text cache.
         /// </summary>
         private void InvalidateProcessedLineCache()
         {
@@ -274,7 +274,7 @@ namespace SnakeTail
         }
 
         /// <summary>
-        /// 把虚拟索引映射为实际显示索引。
+        /// Maps a virtual index to the actual display index.
         /// </summary>
         private int ResolveDisplayIndex(int virtualIndex)
         {
@@ -287,7 +287,7 @@ namespace SnakeTail
         }
 
         /// <summary>
-        /// 获取指定显示索引对应的原始行文本。
+        /// Gets the raw line text for the given display index.
         /// </summary>
         private string GetRawLineTextByDisplayIndex(int displayIndex)
         {
@@ -317,7 +317,7 @@ namespace SnakeTail
         }
 
         /// <summary>
-        /// 获取虚拟索引对应的处理后文本。
+        /// Gets the processed text for the given virtual index.
         /// </summary>
         private string GetProcessedLineTextByVirtualIndex(int virtualIndex)
         {
@@ -326,7 +326,7 @@ namespace SnakeTail
         }
 
         /// <summary>
-        /// 获取显示索引对应的处理后文本。
+        /// Gets the processed text for the given display index.
         /// </summary>
         private string GetProcessedLineTextByDisplayIndex(int displayIndex)
         {
@@ -336,7 +336,7 @@ namespace SnakeTail
         }
 
         /// <summary>
-        /// 普通文本搜索只搜原文；高亮搜索沿用显示侧文本。
+        /// Plain text search only searches the raw text; highlight search uses the display-side text.
         /// </summary>
         private string GetSearchLineTextByVirtualIndex(int virtualIndex, bool lineHighlights)
         {
@@ -347,16 +347,16 @@ namespace SnakeTail
         }
 
         /// <summary>
-        /// 搜索是否需要走处理后文本。
+        /// Whether the search needs to use processed text.
         /// </summary>
         internal static bool ShouldSearchProcessedText(bool lineHighlights)
         {
-            // 高亮搜索依赖显示链路；普通文本搜索只看原文。
+            // Highlight search depends on the display pipeline; plain text search only looks at the raw text.
             return lineHighlights;
         }
 
         /// <summary>
-        /// 普通文本搜索且无过滤时，允许直接顺序扫原文。
+        /// For plain text search with no filter, allow scanning the raw text sequentially.
         /// </summary>
         private bool CanUseDirectRawSearch(bool lineHighlights)
         {
@@ -366,7 +366,7 @@ namespace SnakeTail
         }
 
         /// <summary>
-        /// 长时间搜索时定期让 UI 处理消息，避免窗口假死。
+        /// During long searches, periodically let the UI process messages so the window doesn't appear frozen.
         /// </summary>
         private static void PumpSearchUiIfNeeded(ref int lastPumpTick)
         {
@@ -379,7 +379,7 @@ namespace SnakeTail
         }
 
         /// <summary>
-        /// 低频刷新搜索进度，减少 UI 更新开销。
+        /// Refreshes search progress infrequently to reduce UI update overhead.
         /// </summary>
         private void UpdateSearchProgressIfNeeded(int currentIndex, int endIndex, ref int lastPumpTick)
         {
@@ -393,7 +393,7 @@ namespace SnakeTail
         }
 
         /// <summary>
-        /// 按绝对行号读取原始文本，供块插件向后收集整块内容。
+        /// Reads raw text by absolute line number, so block plugins can collect the whole block that follows.
         /// </summary>
         private string ReadRawLineTextByLineKey(int lineKey)
         {
@@ -407,7 +407,7 @@ namespace SnakeTail
         }
 
         /// <summary>
-        /// 获取虚拟索引对应的原始文本（用于 Ctrl+C）。
+        /// Gets the raw text for a virtual index (used for Ctrl+C).
         /// </summary>
         private string GetRawLineTextByVirtualIndex(int virtualIndex)
         {
@@ -417,7 +417,7 @@ namespace SnakeTail
 
         private Color GetContrastColor(Color color)
         {
-            // 计算对比色，用于文本显示
+            // Compute a contrasting color for text display
             int brightness = (int)((color.R * 299 + color.G * 587 + color.B * 114) / 1000);
             return brightness > 128 ? Color.Black : Color.White;
         }
@@ -486,9 +486,9 @@ namespace SnakeTail
 
         public Form TailWindow { get { return this; } }
 
-        /// <summary>当前正在 tail 的日志文件绝对路径，用于单实例时判断是否已打开。</summary>
+        /// <summary>Absolute path of the log file currently being tailed, used by single instance to tell whether it is already open.</summary>
         public string CurrentFilePathAbsolute => _logTailStream?.FilePathAbsolute;
-        /// <summary>最近一次加载失败原因，供批量打开汇总使用。</summary>
+        /// <summary>Reason for the most recent load failure, used by the batch open summary.</summary>
         public string LastLoadFailureReason { get; private set; }
 
         public void LoadFile(string filepath)
@@ -500,7 +500,7 @@ namespace SnakeTail
 
         public void LoadConfig(TailFileConfig tailConfig, string configPath)
         {
-            // 每次加载前清空失败原因，确保状态与当前文件一致。
+            // Clear the failure reason before each load so the state matches the current file.
             LastLoadFailureReason = null;
             _configPath = configPath;
             _currentTailConfig = tailConfig;
@@ -519,7 +519,7 @@ namespace SnakeTail
                 return;
             }
 
-            // 兼容旧配置：缺失或非法值时回退到稳定默认值。
+            // Old config compatibility: fall back to stable defaults for missing or invalid values.
             if (tailConfig.FileCacheSize <= 0)
                 tailConfig.FileCacheSize = TailFileConfig.DefaultFileCacheSize;
             if (tailConfig.FileCheckInterval <= 0)
@@ -627,7 +627,7 @@ namespace SnakeTail
                 {
                     if (MessageBox.Show(this, String.Format("The file is very large, sure you want to open it?\n\nFile Name: {0}\nFile Size: {1} Megabytes", _logTailStream.FilePath, _logTailStream.Length / 1024 / 1024), "Large file detected", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.No)
                     {
-                        LastLoadFailureReason = string.Format("用户取消打开超大文件: File={0}, SizeMB={1}", _logTailStream.FilePath, _logTailStream.Length / 1024 / 1024);
+                        LastLoadFailureReason = string.Format("User canceled opening a very large file: File={0}, SizeMB={1}", _logTailStream.FilePath, _logTailStream.Length / 1024 / 1024);
                         Close();
                         return;
                     }
@@ -653,8 +653,8 @@ namespace SnakeTail
                 // Add loading of cache while counting lines in file
                 int lineCount = _logFileCache.FillTailCache(_logTailStream);
                 _tailListView.VirtualListSize = lineCount;
-                _savedLineNumber = 0; // 重置行号偏移量
-                _originalVirtualListSize = 0; // 重置原始大小
+                _savedLineNumber = 0; // Reset the line number offset
+                _originalVirtualListSize = 0; // Reset the original size
                 if (_quickFilter)
                 {
                     ApplyKeywordFilter();
@@ -674,7 +674,7 @@ namespace SnakeTail
             if (!string.IsNullOrEmpty(tailConfig.ServiceName))
                 _taskMonitor = new TaskMonitor(tailConfig.ServiceName, tailConfig.ServiceMachineName);
 
-            // 重新加载显示插件并恢复启用顺序
+            // Reload display plugins and restore the enabled order
             InitializeDisplayPlugins(tailConfig);
             InvalidateProcessedLineCache();
 
@@ -708,8 +708,8 @@ namespace SnakeTail
 
             UpdateFormTitle(true);
 
-            // 加载快速关键字配置
-            // 先设置字段值，避免触发事件时使用旧值
+            // Load the quick keyword settings
+            // Set the field values first so events don't fire with stale values
             _quickKeyword = tailConfig.QuickKeyword ?? "";
             _quickHighlight = tailConfig.QuickHighlight;
             _quickFilter = tailConfig.QuickFilter;
@@ -720,7 +720,7 @@ namespace SnakeTail
                 _quickHighlightColor = tailConfig.FormQuickHighlightColor.Value;
             }
 
-            // 然后更新 UI 控件
+            // Then update the UI controls
             if (_keywordTextBox != null)
             {
                 _keywordTextBox.Text = _quickKeyword;
@@ -743,7 +743,7 @@ namespace SnakeTail
                 _highlightColorButton.ForeColor = GetContrastColor(_quickHighlightColor);
             }
 
-            // 如果启用了过滤或高亮，应用它们
+            // If filtering or highlighting is enabled, apply it
             if (_quickFilter && !string.IsNullOrEmpty(_quickKeyword))
             {
                 ApplyKeywordFilter();
@@ -784,7 +784,7 @@ namespace SnakeTail
                 _tailListView.Invalidate();
             }
 
-            // 文件被重新加载，重置行号偏移量
+            // The file was reloaded; reset the line number offset
             _savedLineNumber = 0;
             InvalidateProcessedLineCache();
             MarkTabChangedIfInactive();
@@ -1045,7 +1045,7 @@ namespace SnakeTail
             // Reload the view
             _tailListView.Items.Clear();
             _tailListView.VirtualListSize = 0;
-            _savedLineNumber = 0; // 重置行号偏移量
+            _savedLineNumber = 0; // Reset the line number offset
             _topIndexHack = true;
             Application.DoEvents();
 
@@ -1126,7 +1126,7 @@ namespace SnakeTail
 
             tailConfig.DisplayTabIcon = _displayTabIcon;
 
-            // 保存快速关键字配置
+            // Save the quick keyword settings
             tailConfig.QuickKeyword = _quickKeyword;
             tailConfig.QuickHighlight = _quickHighlight;
             tailConfig.FormQuickHighlightColor = _quickHighlightColor;
@@ -1139,13 +1139,13 @@ namespace SnakeTail
         {
             try
             {
-                // 优先复制行内选中的文字（双击选词/选行）
+                // Prefer copying the text selected within the line (double-click word/line selection)
                 if (!string.IsNullOrEmpty(_inlineSelectionText))
                 {
                     ClipboardHelper.CopyToClipboard(_inlineSelectionText);
                     return;
                 }
-                // 否则复制选中行
+                // Otherwise copy the selected lines
                 StringBuilder selection = new StringBuilder();
                 foreach (int itemIndex in _tailListView.SelectedIndices)
                 {
@@ -1210,7 +1210,7 @@ namespace SnakeTail
                         PumpSearchUiIfNeeded(ref lastPumpTick);
                     }
 
-                    // 搜索文本按启用功能选择原文或处理后文本。
+                    // The search text uses raw or processed text depending on the enabled features.
                     string lineText = GetSearchLineTextByVirtualIndex(i, lineHighlights);
 
                     if (MatchTextSearch(i, lineText, searchText, matchCase, lineHighlights))
@@ -1256,7 +1256,7 @@ namespace SnakeTail
         }
 
         /// <summary>
-        /// 直接顺序扫描原始文本，避免搜索期间反复走缓存与显示处理链。
+        /// Scans the raw text sequentially, avoiding repeated trips through the cache and display pipeline during search.
         /// </summary>
         private int SearchForRawTextForward(string searchText, bool matchCase, int startIndex, int endIndex, ref int lastPumpTick)
         {
@@ -1341,7 +1341,7 @@ namespace SnakeTail
             if (startIndex >= endIndex)
                 return -1;
 
-            // 反向搜索改为正向扫描记录最后命中，避免按递减行号反复从文件头重读。
+            // Reverse search now scans forward and records the last hit, instead of rereading from the start of the file for each decreasing line number.
             int lastPumpTick = Environment.TickCount;
             int lastMatchFound = -1;
             if (CanUseDirectRawSearch(lineHighlights))
@@ -1417,8 +1417,8 @@ namespace SnakeTail
                 Icon = MainForm.Instance.Icon;
             }
 
-            // 保证顶部关键字栏与底部状态栏在 Dock.Fill 内容区之上，
-            // 避免 ListView 重绘时盖住工具栏（表现为鼠标滑过才逐步露出）。
+            // Keep the top keyword bar and bottom status bar above the Dock.Fill content area,
+            // so the ListView doesn't cover the toolbar when repainting (which showed up as it only reappearing bit by bit on mouse-over).
             _statusStrip.Visible = true;
             this.Controls.Remove(_keywordToolStrip);
             this.Controls.Remove(_statusStrip);
@@ -1459,11 +1459,11 @@ namespace SnakeTail
             {
                 try
                 {
-                    // 尝试获取文件列表以验证权限
+                    // Try to get the file list to verify permissions
                     Array array = e.Data.GetData(DataFormats.FileDrop) as Array;
                     if (array != null && array.Length > 0)
                     {
-                        // 检查第一个文件是否可访问（不实际打开，只检查路径）
+                        // Check whether the first file is accessible (don't actually open it, just check the path)
                         string firstFile = array.GetValue(0).ToString();
                         if (!string.IsNullOrEmpty(firstFile) && System.IO.Path.IsPathRooted(firstFile))
                         {
@@ -1474,7 +1474,7 @@ namespace SnakeTail
                 }
                 catch
                 {
-                    // 如果权限检查失败，仍然允许拖拽，让 DragDrop 处理错误
+                    // If the permission check fails, still allow the drag and let DragDrop handle the error
                 }
                 e.Effect = DragDropEffects.Copy;
             }
@@ -1526,7 +1526,7 @@ namespace SnakeTail
                 {
                     try
                     {
-                        // 验证文件路径和权限
+                        // Validate file paths and permissions
                         List<string> validFiles = new List<string>();
                         List<string> invalidFiles = new List<string>();
 
@@ -1537,33 +1537,33 @@ namespace SnakeTail
                                 if (string.IsNullOrEmpty(filename))
                                     continue;
 
-                                // 检查路径是否有效
+                                // Check whether the path is valid
                                 if (!System.IO.Path.IsPathRooted(filename))
                                 {
                                     invalidFiles.Add(filename);
                                     continue;
                                 }
 
-                                // 尝试访问文件信息以验证权限
-                                // 对于目录，检查是否存在
+                                // Try to access the file info to verify permissions
+                                // For directories, check that they exist
                                 if (System.IO.Directory.Exists(filename))
                                 {
-                                    // 目录暂时不支持，跳过
+                                    // Directories aren't supported yet, skip
                                     continue;
                                 }
 
-                                // 对于文件，检查是否存在或是否可以访问
+                                // For files, check whether they exist or can be accessed
                                 if (System.IO.File.Exists(filename))
                                 {
-                                    // 尝试获取文件信息以验证权限
+                                    // Try to get the file info to verify permissions
                                     System.IO.FileInfo fileInfo = new System.IO.FileInfo(filename);
-                                    // 如果文件存在但无法访问，会在 OpenFileSelection 中处理
+                                    // If the file exists but can't be accessed, OpenFileSelection handles it
                                     validFiles.Add(filename);
                                 }
                                 else
                                 {
-                                    // 文件不存在，但可能是新文件或需要特殊权限
-                                    // 尝试检查父目录权限
+                                    // The file doesn't exist, but it may be a new file or need special permissions
+                                    // Try checking the parent directory's permissions
                                     string dir = System.IO.Path.GetDirectoryName(filename);
                                     if (!string.IsNullOrEmpty(dir) && System.IO.Directory.Exists(dir))
                                     {
@@ -1577,11 +1577,11 @@ namespace SnakeTail
                             }
                             catch (System.UnauthorizedAccessException)
                             {
-                                invalidFiles.Add(filename + " (权限不足)");
+                                invalidFiles.Add(filename + " (insufficient permissions)");
                             }
                             catch (System.Security.SecurityException)
                             {
-                                invalidFiles.Add(filename + " (安全权限不足)");
+                                invalidFiles.Add(filename + " (insufficient security permissions)");
                             }
                             catch (Exception ex)
                             {
@@ -1589,22 +1589,22 @@ namespace SnakeTail
                             }
                         }
 
-                        // 打开有效的文件
+                        // Open the valid files
                         if (validFiles.Count > 0)
                         {
                             MainForm.Instance.OpenFileSelection(validFiles.ToArray());
                         }
 
-                        // 显示无效文件的错误消息
+                        // Show an error message for the invalid files
                         if (invalidFiles.Count > 0)
                         {
-                            string errorMsg = "以下文件无法打开：\n\n" + string.Join("\n", invalidFiles.ToArray());
-                            MessageBox.Show(this, errorMsg, "文件拖拽失败", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                            string errorMsg = "The following files could not be opened:\n\n" + string.Join("\n", invalidFiles.ToArray());
+                            MessageBox.Show(this, errorMsg, "File Drop Failed", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                         }
                     }
                     catch (Exception ex)
                     {
-                        MessageBox.Show(this, "打开文件时发生错误：\n\n" + ex.Message, "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        MessageBox.Show(this, "An error occurred while opening the files:\n\n" + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     }
                 }
             }), new object[] { param });
@@ -1638,7 +1638,7 @@ namespace SnakeTail
             }
             else
             {
-                // 快速关键字高亮（优先级高于配置的关键字）
+                // Quick keyword highlight (takes priority over configured keywords)
                 if (_quickHighlight && !string.IsNullOrEmpty(_quickKeyword))
                 {
                     if (MatchesQuickKeyword(e.Item.Text))
@@ -1648,7 +1648,7 @@ namespace SnakeTail
                     }
                 }
 
-                // 配置的关键字高亮
+                // Configured keyword highlight
                 if (!highlightColor.HasValue)
                 {
                     TailKeywordConfig keyword = MatchesKeyword(e.Item.Text, false, true);
@@ -1663,7 +1663,7 @@ namespace SnakeTail
                 }
             }
 
-            // 设置背景色
+            // Set the background color
             if (e.Item.Selected)
             {
                 e.SubItem.BackColor = SystemColors.Highlight;
@@ -1677,11 +1677,11 @@ namespace SnakeTail
                 e.SubItem.ForeColor = e.Item.ListView.ForeColor;
             }
 
-            // 绘制背景
+            // Draw the background
             e.DrawBackground();
             e.DrawFocusRectangle(e.Bounds);
 
-            // 如果有高亮，在行最左边绘制色块
+            // If highlighted, draw a color block at the far left of the line
             const int colorBlockWidth = 4;
             if (highlightColor.HasValue)
             {
@@ -1692,7 +1692,7 @@ namespace SnakeTail
                 }
             }
 
-            // 计算文本绘制区域（留出色块空间）
+            // Compute the text drawing area (leaving room for the color block)
             Rectangle textBounds = new Rectangle(
                 e.Bounds.Left + colorBlockWidth + 2,
                 e.Bounds.Top,
@@ -1702,7 +1702,7 @@ namespace SnakeTail
             string text = e.Item.Text.Length > 1000 ? e.Item.Text.Substring(0, 1000) : e.Item.Text;
             TextFormatFlags flags = TextFormatFlags.Left | TextFormatFlags.ExpandTabs | TextFormatFlags.SingleLine | TextFormatFlags.NoPrefix;
 
-            // 如果有关键字高亮且不是书签，绘制带高亮的文本
+            // If there is a keyword highlight and it isn't a bookmark, draw the highlighted text
             if (highlightColor.HasValue && !string.IsNullOrEmpty(highlightKeyword) && !isBookmark && !e.Item.Selected)
             {
                 DrawTextWithHighlight(e.Graphics, text, e.Item.ListView.Font, textBounds, e.SubItem.ForeColor, highlightColor.Value, highlightKeyword, flags);
@@ -1712,7 +1712,7 @@ namespace SnakeTail
                 TextRenderer.DrawText(e.Graphics, text, e.Item.ListView.Font, textBounds, e.SubItem.ForeColor, flags);
             }
 
-            // 行内选择高亮：在选中文字上绘制选区背景和文字
+            // In-line selection highlight: draw the selection background and text over the selected text
             if (e.ItemIndex == _inlineSelectionItemIndex && _inlineSelectionLength > 0 && _inlineSelectionStart < text.Length)
             {
                 int start = Math.Min(_inlineSelectionStart, text.Length);
@@ -1734,11 +1734,11 @@ namespace SnakeTail
         }
 
         /// <summary>
-        /// 绘制带关键字高亮的文本
+        /// Draws text with keyword highlighting
         /// </summary>
         private void DrawTextWithHighlight(Graphics g, string text, Font font, Rectangle bounds, Color textColor, Color highlightColor, string keyword, TextFormatFlags flags)
         {
-            // 查找所有关键字位置
+            // Find all keyword positions
             List<int> keywordPositions = new List<int>();
             int pos = 0;
             while ((pos = text.IndexOf(keyword, pos, StringComparison.CurrentCultureIgnoreCase)) != -1)
@@ -1749,47 +1749,47 @@ namespace SnakeTail
 
             if (keywordPositions.Count == 0)
             {
-                // 没有找到关键字，直接绘制
+                // No keyword found; draw directly
                 TextRenderer.DrawText(g, text, font, bounds, textColor, flags);
                 return;
             }
 
-            // 分段绘制文本
+            // Draw the text in segments
             int currentX = bounds.Left;
             int lastEnd = 0;
             Color highlightTextColor = GetContrastColor(highlightColor);
 
             foreach (int keywordPos in keywordPositions)
             {
-                // 绘制关键字前的普通文本
+                // Draw the plain text before the keyword
                 if (keywordPos > lastEnd)
                 {
                     string beforeText = text.Substring(lastEnd, keywordPos - lastEnd);
                     Size beforeSize = TextRenderer.MeasureText(g, beforeText, font, new Size(int.MaxValue, bounds.Height), flags);
                     Rectangle beforeRect = new Rectangle(currentX, bounds.Top, beforeSize.Width, bounds.Height);
                     TextRenderer.DrawText(g, beforeText, font, beforeRect, textColor, flags);
-                    currentX += beforeSize.Width - 4; // 减去一些间距补偿
+                    currentX += beforeSize.Width - 4; // Subtract a little to compensate for spacing
                 }
 
-                // 绘制高亮的关键字
+                // Draw the highlighted keyword
                 string keywordText = text.Substring(keywordPos, keyword.Length);
                 Size keywordSize = TextRenderer.MeasureText(g, keywordText, font, new Size(int.MaxValue, bounds.Height), flags);
                 Rectangle keywordRect = new Rectangle(currentX, bounds.Top, keywordSize.Width, bounds.Height);
 
-                // 绘制关键字背景
+                // Draw the keyword background
                 using (SolidBrush brush = new SolidBrush(highlightColor))
                 {
                     Rectangle bgRect = new Rectangle(currentX, bounds.Top + 1, keywordSize.Width - 4, bounds.Height - 2);
                     g.FillRectangle(brush, bgRect);
                 }
 
-                // 绘制关键字文本
+                // Draw the keyword text
                 TextRenderer.DrawText(g, keywordText, font, keywordRect, highlightTextColor, flags);
                 currentX += keywordSize.Width - 4;
                 lastEnd = keywordPos + keyword.Length;
             }
 
-            // 绘制最后一段普通文本
+            // Draw the last segment of plain text
             if (lastEnd < text.Length)
             {
                 string afterText = text.Substring(lastEnd);
@@ -1877,12 +1877,12 @@ namespace SnakeTail
             bool matches = false;
             if (_quickInverse)
             {
-                // 反向匹配：不包含关键字
+                // Inverted match: does not contain the keyword
                 matches = line.IndexOf(_quickKeyword, StringComparison.CurrentCultureIgnoreCase) == -1;
             }
             else
             {
-                // 正向匹配：包含关键字
+                // Normal match: contains the keyword
                 matches = line.IndexOf(_quickKeyword, StringComparison.CurrentCultureIgnoreCase) != -1;
             }
             return matches;
@@ -1898,19 +1898,19 @@ namespace SnakeTail
                 return;
             }
 
-            // 保存原始大小（如果还没有保存）
+            // Save the original size (if not saved yet)
             if (_originalVirtualListSize == 0)
             {
                 _originalVirtualListSize = _tailListView.VirtualListSize;
             }
 
-            // 遍历所有行，找出匹配的行
+            // Go through all lines and find the matching ones
             int virtualIndex = 0;
             int actualSize = _originalVirtualListSize > 0 ? _originalVirtualListSize : _tailListView.VirtualListSize;
 
             for (int i = 0; i < actualSize; i++)
             {
-                // 过滤统一基于处理后文本
+                // Filtering is always based on processed text
                 string lineText = GetProcessedLineTextByDisplayIndex(i);
 
                 if (lineText != null && MatchesQuickKeyword(lineText))
@@ -1933,7 +1933,7 @@ namespace SnakeTail
             }
             else
             {
-                // 取消过滤，恢复原始大小
+                // Filter canceled; restore the original size
                 if (_filteredIndexMap.Count > 0 || _originalVirtualListSize > 0)
                 {
                     _filteredIndexMap.Clear();
@@ -1948,7 +1948,7 @@ namespace SnakeTail
 
         private void _tailListView_MouseDown(object sender, MouseEventArgs e)
         {
-            // 单击时清除行内选择，以便随后 Ctrl+C 复制整行
+            // Clear the in-line selection on single click, so a following Ctrl+C copies the whole line
             ClearInlineSelection();
         }
 
@@ -1973,7 +1973,7 @@ namespace SnakeTail
             if (lineText.Length == 0)
                 return;
 
-            const int textLeftOffset = 6; // colorBlockWidth + 2，与 DrawSubItem 一致
+            const int textLeftOffset = 6; // colorBlockWidth + 2, consistent with DrawSubItem
             int clickX = e.X - textLeftOffset;
             if (clickX < 0)
                 clickX = 0;
@@ -1992,7 +1992,7 @@ namespace SnakeTail
 
                 if (isSecondDoubleClickOnSameWord)
                 {
-                    // 在已选中的词上再次双击：选择整行
+                    // Double-clicking an already selected word: select the whole line
                     _inlineSelectionText = lineText;
                     _inlineSelectionItemIndex = virtualIndex;
                     _inlineSelectionStart = 0;
@@ -2003,7 +2003,7 @@ namespace SnakeTail
                 }
                 else
                 {
-                    // 首次双击：选择词
+                    // First double-click: select the word
                     _inlineSelectionText = wordLen > 0 ? lineText.Substring(wordStart, wordLen) : "";
                     _inlineSelectionItemIndex = virtualIndex;
                     _inlineSelectionStart = wordStart;
@@ -2014,7 +2014,7 @@ namespace SnakeTail
                 }
             }
 
-            // 双击选中文字时去掉整行选择，只保留行内选区高亮
+            // When double-clicking selects text, drop the whole-line selection and keep only the in-line selection highlight
             _tailListView.SelectedIndices.Clear();
             _tailListView.Invalidate(_tailListView.GetItemRect(virtualIndex));
         }
@@ -2056,7 +2056,7 @@ namespace SnakeTail
             wordLength = 0;
             if (string.IsNullOrEmpty(text) || charIndex < 0 || charIndex >= text.Length)
                 return;
-            // 词：字母、数字、下划线
+            // Word: letters, digits, underscore
             int start = charIndex;
             while (start > 0 && IsWordChar(text[start - 1]))
                 start--;
@@ -2087,7 +2087,7 @@ namespace SnakeTail
                     catch { }
                     return;
                 }
-                // 否则复制当前行
+                // Otherwise copy the current line
                 ListViewItem current = _tailListView.FocusedItem ?? (_tailListView.SelectedIndices.Count > 0 ? _tailListView.Items[_tailListView.SelectedIndices[0]] : null);
                 if (current != null)
                 {
@@ -2185,7 +2185,7 @@ namespace SnakeTail
         }
 
         /// <summary>
-        /// 当日志内容发生变化且当前窗口非激活时，标记对应标签页为未读变更。
+        /// When the log content changes and this window isn't active, marks the corresponding tab as having unread changes.
         /// </summary>
         private void MarkTabChangedIfInactive()
         {
@@ -2219,11 +2219,11 @@ namespace SnakeTail
 
                 int previousDisplayLineCount = _tailListView.VirtualListSize;
                 bool isFilteringActive = _quickFilter && !string.IsNullOrEmpty(_quickKeyword);
-            // 当未开启过滤时，直接使用显示行数，确保非过滤场景也能正确刷新
+            // When filtering is off, use the display line count directly so non-filtered cases refresh correctly too
             int displayLineCount = isFilteringActive
                 ? (_originalVirtualListSize > 0 ? _originalVirtualListSize : previousDisplayLineCount)
-                : previousDisplayLineCount;  // 当前未过滤行数
-            int actualLineCount = _savedLineNumber + displayLineCount;  // 文件中的实际行号
+                : previousDisplayLineCount;  // Current unfiltered line count
+            int actualLineCount = _savedLineNumber + displayLineCount;  // Actual line number in the file
             bool listAtBottom = ListAtBottom();
             bool warningIcon = false;
             int appendedLines = 0;
@@ -2237,15 +2237,15 @@ namespace SnakeTail
                 else
                     warningIcon = true;
 
-            // 从文件的实际位置读取新行
+            // Read new lines from the file's actual position
                 string line = _logTailStream.ReadLine(actualLineCount + 1);
             while (line != null)
             {
                 ++displayLineCount;
                 ++actualLineCount;
                 ++appendedLines;
-                _logFileCache.AppendTailCache(line, displayLineCount);  // cache 使用显示行号
-                // 新增行的高亮/工具触发统一基于处理后文本
+                _logFileCache.AppendTailCache(line, displayLineCount);  // The cache uses display line numbers
+                // Highlighting/tool triggers for new lines are always based on processed text
                 string processedLine = _displayTextProcessor.GetProcessedLineText(actualLineCount, line, ReadRawLineTextByLineKey);
                 TailKeywordConfig keywordMatch = MatchesKeyword(processedLine, false, false);
                 if (keywordMatch != null)
@@ -2271,7 +2271,7 @@ namespace SnakeTail
                 {
                 if (displayLineCount == 0 && _savedLineNumber == 0 && _logTailStream.Length == 0)
                 {
-                    // 文件为空或无法打开，显示错误信息
+                    // The file is empty or can't be opened; show an error message
                     return;
                 }
                 else if (displayLineCount == 1 && _savedLineNumber == 0 && _logTailStream.Length == 0)
@@ -2285,7 +2285,7 @@ namespace SnakeTail
                     return;
                 }
 
-                // 文件被截断或重载，重置偏移量
+                // The file was truncated or reloaded; reset the offset
                 displayLineCount = 0;
                 _savedLineNumber = 0;
                 InvalidateProcessedLineCache();
@@ -2306,14 +2306,14 @@ namespace SnakeTail
 
                 if (displayLineCount < _tailListView.VirtualListSize)
                 {
-                // 文件被截断，重置
+                // The file was truncated; reset
                 _logFileStream.CheckLogFile(true);
                 _logFileCache = new LogFileCache(_logFileCache.Items.Count);
-                _logFileCache.LineOffset = 0;  // 重置行号偏移量
+                _logFileCache.LineOffset = 0;  // Reset the line number offset
                 _tailListView.TopItem = null;
                 _tailListView.VirtualListSize = displayLineCount;
-                _savedLineNumber = 0;  // 重置偏移量
-                _originalVirtualListSize = 0; // 重置原始大小
+                _savedLineNumber = 0;  // Reset the offset
+                _originalVirtualListSize = 0; // Reset the original size
                 InvalidateProcessedLineCache();
                 if (isFilteringActive)
                 {
@@ -2326,12 +2326,12 @@ namespace SnakeTail
                 //_tailListView.VirtualListSize = linecount;
                 if (!isFilteringActive)
                 {
-                    _originalVirtualListSize = 0; // 重置原始大小
+                    _originalVirtualListSize = 0; // Reset the original size
                     ListViewUtil.SetVirtualListSizeWithoutRefresh(_tailListView, displayLineCount);
                 }
                 else
                 {
-                    // 如果启用过滤，更新原始大小并重新应用过滤
+                    // If filtering is enabled, update the original size and reapply the filter
                     _originalVirtualListSize = displayLineCount;
                     ApplyKeywordFilter();
                 }
@@ -2636,7 +2636,7 @@ namespace SnakeTail
         {
             bool pauseAndContinue = _taskMonitor != null && _taskMonitor.CanPauseAndContinue;
             RebuildPluginMenu();
-            // 非系统日志（普通文件日志）不显示 Start Service 和 Stop Service 菜单项
+            // Non-system logs (plain file logs) don't show the Start Service and Stop Service menu items
             startServiceToolStripMenuItem.Visible = false;
             stopServiceToolStripMenuItem.Visible = false;
             pauseServiceToolStripMenuItem.Visible = pauseAndContinue;
@@ -2647,7 +2647,7 @@ namespace SnakeTail
         private void TailForm_Activated(object sender, EventArgs e)
         {
             SearchForm.Instance.ActiveTailForm = this;
-            // 当前标签页被激活后，清除未读变更红点。
+            // Once the current tab is activated, clear its unread-changes red dot.
             if (MainForm.Instance != null)
                 MainForm.Instance.SetMdiTabChanged(this, false);
             TabPage parentTab = this.Tag as TabPage;
@@ -2992,27 +2992,27 @@ namespace SnakeTail
 
         private void clearLogToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            // 只对文件型log有效（TailForm），事件日志（EventLogForm）不适用
+            // Only applies to file logs (TailForm), not event logs (EventLogForm)
             if (_logTailStream == null)
                 return;
 
-            // 清屏偏移取“可见行累计”和“读取器真实已读行号”的较大值，避免后续从文件头重扫旧行。
+            // The clear-screen offset takes the larger of the "accumulated visible lines" and the "reader's actual line number read", so later reads don't rescan old lines from the start of the file.
             int visibleOffset = _savedLineNumber + _tailListView.VirtualListSize;
             int readerOffset = _logTailStream.LastReadLineNumber;
             _savedLineNumber = Math.Max(visibleOffset, readerOffset);
 
-            // 清空当前log的显示区域
+            // Clear the current log's display area
             if (_logFileCache != null)
             {
                 _logFileCache.Reset();
             }
 
-            // 重新创建缓存，并设置行号偏移量
+            // Recreate the cache and set the line number offset
             int cacheSize = _currentTailConfig != null && _currentTailConfig.FileCacheSize > 0
                 ? _currentTailConfig.FileCacheSize
                 : 1000;
             _logFileCache = new LogFileCache(cacheSize);
-            _logFileCache.LineOffset = _savedLineNumber;  // 设置行号偏移量
+            _logFileCache.LineOffset = _savedLineNumber;  // Set the line number offset
             _logFileCache.LoadingFileEvent += new EventHandler(_logFileCache_LoadingFileEvent);
             _logFileCache.FillCacheEvent += new EventHandler(_logFileCache_FillCacheEvent);
 
@@ -3025,8 +3025,8 @@ namespace SnakeTail
             _tailListView.Invalidate();
             _tailListView.Update();
 
-            // 不重新读取旧内容，显示区域保持为空
-            // timer 会检测到新行时才显示
+            // Don't reread old content; the display area stays empty
+            // New lines only appear once the timer detects them
         }
     }
 

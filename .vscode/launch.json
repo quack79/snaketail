@@ -13,7 +13,7 @@
       "console": "internalConsole"
     },
     {
-      "name": "SnakeTail (无编译直接启动)",
+      "name": "SnakeTail (launch without building)",
       "type": "coreclr",
       "request": "launch",
       "program": "${workspaceFolder}/.temp/bin/Debug/net8.0-windows/SnakeTail.dll",

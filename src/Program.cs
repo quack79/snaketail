@@ -25,7 +25,7 @@ namespace SnakeTail
     static class Program
     {
         static volatile bool applicationCrashed = false;
-        /// <summary>GitHub Releases API（用于检查更新），与 publish 工作流发布的 tag 一致。</summary>
+        /// <summary>GitHub Releases API (used to check for updates), matching the tags published by the publish workflow.</summary>
         public static readonly string GitHubReleasesApiUrl = "https://api.github.com/repos/sunnybug/snaketail-net/releases/latest";
 
         const string SingleInstanceMutexName = "Local\\SnakeTail_SingleInstance";
@@ -42,11 +42,11 @@ namespace SnakeTail
             {
                 if (!createdNew)
                 {
-                    // 仅当传入 log 文件参数时才尝试激活首进程并传入参数；无参数时始终启动新进程（新窗口）
+                    // Only try to activate the first process and pass arguments when a log file argument is given; with no arguments always start a new process (new window)
                     var fileArgs = GetCommandLineFileArgs();
                     if (fileArgs.Length > 0 && TrySendArgsToFirstInstance(fileArgs))
                         return;
-                    // 无参数或首进程尚未就绪/管道不可用，当前进程仍正常启动
+                    // No arguments, or the first process isn't ready / the pipe is unavailable: this process still starts normally
                 }
 
                 try
@@ -66,13 +66,13 @@ namespace SnakeTail
                 catch (Exception ex)
                 {
                     AppLog.AppendCrash(ex, "SnakeTail startup");
-                    // 启动阶段也绑定 owner，避免弹窗被遮挡
-                    MessageBox.Show(DialogOwner.Resolve(), ex.ToString(), "SnakeTail 启动异常", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    // Bind an owner during startup too, so the dialog isn't hidden behind other windows
+                    MessageBox.Show(DialogOwner.Resolve(), ex.ToString(), "SnakeTail Startup Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
         }
 
-        /// <summary>从命令行参数中取出要打开的文件/会话路径（跳过 exe 自身）。</summary>
+        /// <summary>Extracts the file/session paths to open from the command-line arguments (skipping the exe itself).</summary>
         static string[] GetCommandLineFileArgs()
         {
             string[] args = Environment.GetCommandLineArgs();
@@ -87,7 +87,7 @@ namespace SnakeTail
             return list.ToArray();
         }
 
-        /// <summary>第二实例：将参数通过命名管道发给首进程，成功返回 true。仅在传入 log 文件时由调用方使用。</summary>
+        /// <summary>Second instance: sends the arguments to the first process through a named pipe; returns true on success. Only used by the caller when a log file is passed.</summary>
         static bool TrySendArgsToFirstInstance(string[] paths)
         {
             if (paths == null)
@@ -115,7 +115,7 @@ namespace SnakeTail
             return false;
         }
 
-        /// <summary>由 MainForm 在 Shown 时调用，启动单实例管道服务（后台线程）。</summary>
+        /// <summary>Called by MainForm on Shown to start the single-instance pipe service (background thread).</summary>
         public static void StartSingleInstancePipeServer()
         {
             var th = new Thread(RunSingleInstancePipeServer)
@@ -153,11 +153,11 @@ namespace SnakeTail
                 }
                 catch (IOException)
                 {
-                    // 客户端断开等
+                    // Client disconnected, etc.
                 }
                 catch (Exception)
                 {
-                    // 忽略单次错误，继续接受下一连接
+                    // Ignore a single error and keep accepting the next connection
                 }
             }
         }
@@ -206,9 +206,9 @@ namespace SnakeTail
                 string crashPath = AppLog.GetCrashLogFilePath();
                 MessageBox.Show(
                     DialogOwner.Resolve(),
-                    "无法显示错误报告对话框。" + Environment.NewLine + Environment.NewLine +
-                    "原始异常: " + (ex?.Message ?? "null") + Environment.NewLine + Environment.NewLine +
-                    "详细已写入: " + crashPath,
+                    "Could not show the error report dialog." + Environment.NewLine + Environment.NewLine +
+                    "Original exception: " + (ex?.Message ?? "null") + Environment.NewLine + Environment.NewLine +
+                    "Details written to: " + crashPath,
                     Application.ProductName + " - Error",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Error);

@@ -5,37 +5,37 @@ using SnakeTail;
 namespace LongMaidDisplayPlugin
 {
     /// <summary>
-    /// 龙女仆示例插件：把 skills: 数字 扩展为附加技能名。
+    /// DragonMaid example plugin: expands skills: <number> by appending the skill name.
     /// </summary>
     public sealed class DragonMaidDisplayPlugin : ILogDisplayPlugin, ILogDisplayBlockPlugin
     {
-        // 统一匹配 skills/passive_skill/aura_skills 三种单值键名，兼容可选双引号。
+        // Matches the three single-value keys skills/passive_skill/aura_skills, with optional double quotes.
         private static readonly Regex SkillRegex = new Regex(@"(?<key>""?(?:skills|passive_skill|aura_skills)""?)\s*:\s*(?<id>\d+)", RegexOptions.Compiled | RegexOptions.CultureInvariant);
-        // 匹配 skill/skills: [1,2,3] 单行技能列表，兼容可选双引号。
+        // Matches a single-line skill list skill/skills: [1,2,3], with optional double quotes.
         private static readonly Regex SkillListRegex = new Regex(@"(?<key>""?(?:skill|skills)""?)\s*:\s*\[(?<ids>\s*\d+(?:\s*,\s*\d+)*)\s*\]", RegexOptions.Compiled | RegexOptions.CultureInvariant);
-        // 匹配技能数组起始行（用于多行 "skills": [ ... ] 块收集）。
+        // Matches the start line of a skills array (for collecting multi-line "skills": [ ... ] blocks).
         private static readonly Regex SkillsArrayStartRegex = new Regex(@"^\s*""?(?:skills|skill)""?\s*:\s*\[\s*$", RegexOptions.Compiled | RegexOptions.CultureInvariant | RegexOptions.Multiline);
-        // 匹配技能数组结束行。
+        // Matches the end line of a skills array.
         private static readonly Regex SkillsArrayEndRegex = new Regex(@"^\s*\]\s*,?\s*$", RegexOptions.Compiled | RegexOptions.CultureInvariant);
-        // 匹配技能数组中的数字行（支持末尾逗号）。
+        // Matches a number line inside a skills array (trailing comma allowed).
         private static readonly Regex SkillsArrayIdLineRegex = new Regex(@"^(?<prefix>\s*)(?<id>\d+)(?<suffix>\s*,?\s*)$", RegexOptions.Compiled | RegexOptions.CultureInvariant);
-        // 匹配战力属性块起始行。
+        // Matches the start line of a battle power attribute block.
         private static readonly Regex BattleEffectsBlockStartRegex = new Regex(@"^\s*attr_data=effects\s*\{\s*$", RegexOptions.Compiled | RegexOptions.CultureInvariant);
-        // 匹配战力属性块中允许出现的行。
+        // Matches the lines allowed inside a battle power attribute block.
         private static readonly Regex BattleEffectsBlockLineRegex = new Regex(@"^\s*(attr_data=effects|effects)\s*\{\s*$|^\s*key:\s*\d+\s*$|^\s*value:\s*\d+\s*$|^\s*\}\s*$", RegexOptions.Compiled | RegexOptions.CultureInvariant);
-        // 匹配下一条日志时间头，用于块边界切分。
+        // Matches the timestamp header of the next log entry, used to split block boundaries.
         private static readonly Regex TimestampHeadRegex = new Regex(@"^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{3}\t", RegexOptions.Compiled | RegexOptions.CultureInvariant);
-        // 匹配战力属性块中的 key 行。
+        // Matches key lines inside a battle power attribute block.
         private static readonly Regex BattleEffectsKeyRegex = new Regex(@"(?m)^(?<indent>\s*key:\s*)(?<id>\d+)\s*$", RegexOptions.Compiled | RegexOptions.CultureInvariant);
         private readonly Dictionary<int, string> _skillMap = new Dictionary<int, string>();
         private readonly Dictionary<int, string> _battlePowerMap = new Dictionary<int, string>();
         private string _jsonPath = string.Empty;
         private string _battlePowerJsonPath = string.Empty;
 
-        public string Name => "龙女仆";
+        public string Name => "DragonMaid";
 
         /// <summary>
-        /// 初始化并读取同目录 s_skill.json。
+        /// Initializes and reads s_skill.json from the same directory.
         /// </summary>
         public void Initialize(PluginContext context)
         {
@@ -44,12 +44,12 @@ namespace LongMaidDisplayPlugin
             _jsonPath = Path.Combine(context.PluginDirectoryAbsolutePath, "s_skill.json");
             _battlePowerJsonPath = Path.Combine(context.PluginDirectoryAbsolutePath, "s_battle_power.json");
             if (!File.Exists(_jsonPath))
-                throw new FileNotFoundException("未找到 s_skill.json", _jsonPath);
+                throw new FileNotFoundException("s_skill.json not found", _jsonPath);
 
             string jsonText = File.ReadAllText(_jsonPath);
             using JsonDocument document = JsonDocument.Parse(jsonText);
             if (!document.RootElement.TryGetProperty("s_skill", out JsonElement skillsElement) || skillsElement.ValueKind != JsonValueKind.Array)
-                throw new InvalidOperationException("JSON 缺少 s_skill 数组");
+                throw new InvalidOperationException("JSON is missing the s_skill array");
 
             foreach (JsonElement row in skillsElement.EnumerateArray())
             {
@@ -71,13 +71,13 @@ namespace LongMaidDisplayPlugin
                 _skillMap[skillId] = skillName;
             }
 
-            // s_battle_power.json 为可选配置，存在时启用 effects 块 key 映射。
+            // s_battle_power.json is optional; when present, it enables key mapping for effects blocks.
             if (File.Exists(_battlePowerJsonPath))
             {
                 string battleJsonText = File.ReadAllText(_battlePowerJsonPath);
                 using JsonDocument battleDocument = JsonDocument.Parse(battleJsonText);
                 if (!battleDocument.RootElement.TryGetProperty("s_battle_power", out JsonElement battlePowerElement) || battlePowerElement.ValueKind != JsonValueKind.Array)
-                    throw new InvalidOperationException("s_battle_power.json 缺少 s_battle_power 数组");
+                    throw new InvalidOperationException("s_battle_power.json is missing the s_battle_power array");
 
                 foreach (JsonElement row in battlePowerElement.EnumerateArray())
                 {
@@ -102,7 +102,7 @@ namespace LongMaidDisplayPlugin
         }
 
         /// <summary>
-        /// 命中 attr_data=effects 起始行时，向后收集完整 effects 属性块。
+        /// When an attr_data=effects start line matches, collects the complete effects attribute block that follows.
         /// </summary>
         public bool TryCollectBlock(int lineKey, string currentLine, Func<int, string> readLineByLineKey, out string blockText)
         {
@@ -112,7 +112,7 @@ namespace LongMaidDisplayPlugin
 
             if (!BattleEffectsBlockStartRegex.IsMatch(currentLine))
             {
-                // 多行 skills 数组：从 "skills": [ 行收集到 ] 行。
+                // Multi-line skills array: collect from the "skills": [ line to the ] line.
                 if (!SkillsArrayStartRegex.IsMatch(currentLine))
                     return false;
 
@@ -168,14 +168,14 @@ namespace LongMaidDisplayPlugin
         }
 
         /// <summary>
-        /// 只处理包含 skills/passive_skill/aura_skills 数字 的行。
+        /// Only processes lines containing skills/passive_skill/aura_skills with a number.
         /// </summary>
         public bool CanProcess(string line)
         {
             if (string.IsNullOrEmpty(line))
                 return false;
 
-            // 兼容单行技能映射与多行 effects 块映射两类输入。
+            // Supports both single-line skill mapping and multi-line effects block mapping inputs.
             return SkillRegex.IsMatch(line)
                 || SkillListRegex.IsMatch(line)
                 || (line.Contains(Environment.NewLine) && SkillsArrayStartRegex.IsMatch(line))
@@ -183,14 +183,14 @@ namespace LongMaidDisplayPlugin
         }
 
         /// <summary>
-        /// 命中且可映射时输出 key: ID 名称；否则放行后续插件。
+        /// On a match with a mapping, outputs key: ID name; otherwise passes through to later plugins.
         /// </summary>
         public PluginProcessResult TryProcess(string line)
         {
             if (string.IsNullOrEmpty(line))
                 return new PluginProcessResult { Handled = false, Output = line };
 
-            // 多行 effects 块：把 key: 数字 映射为 key: 数字 名称。
+            // Multi-line effects block: map key: <number> to key: <number> <name>.
             if (line.Contains(Environment.NewLine) && BattleEffectsKeyRegex.IsMatch(line))
             {
                 string blockOutput = BattleEffectsKeyRegex.Replace(line, match =>
@@ -211,11 +211,11 @@ namespace LongMaidDisplayPlugin
                 {
                     Handled = changed,
                     Output = blockOutput,
-                    ErrorMessage = !changed && _battlePowerMap.Count == 0 ? "未加载 s_battle_power 映射，effects key 名称无法扩展" : string.Empty
+                    ErrorMessage = !changed && _battlePowerMap.Count == 0 ? "s_battle_power mapping not loaded; effects key names cannot be expanded" : string.Empty
                 };
             }
 
-            // 多行 skills 数组：逐行把数字扩展为“数字 名称”。
+            // Multi-line skills array: expand each number line to "number name".
             if (line.Contains(Environment.NewLine) && SkillsArrayStartRegex.IsMatch(line))
             {
                 string[] lines = line.Split(new[] { Environment.NewLine }, StringSplitOptions.None);
@@ -251,7 +251,7 @@ namespace LongMaidDisplayPlugin
                 };
             }
 
-            // skill/skills: [数字,数字]：逐个 ID 映射并在原位置追加技能名。
+            // skill/skills: [number,number]: map each ID and append the skill name in place.
             Match listMatch = SkillListRegex.Match(line);
             if (listMatch.Success)
             {
@@ -299,14 +299,14 @@ namespace LongMaidDisplayPlugin
                 {
                     Handled = false,
                     Output = line,
-                    ErrorMessage = key + " 数字解析失败: " + idText
+                    ErrorMessage = key + " failed to parse number: " + idText
                 };
             }
 
             if (!_skillMap.TryGetValue(skillId, out string? skillName))
                 return new PluginProcessResult { Handled = false, Output = line };
 
-            // 保持原键名，仅追加技能名。
+            // Keep the original key name; only append the skill name.
             string replacement = string.Format("{0}: {1} {2}", key, skillId, skillName);
             string output = SkillRegex.Replace(line, replacement, 1);
             return new PluginProcessResult { Handled = true, Output = output };

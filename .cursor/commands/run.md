@@ -1,1 +1,1 @@
-运行run.ps1，修改出现的编译问题
+Run run.ps1 and fix any compile errors that come up

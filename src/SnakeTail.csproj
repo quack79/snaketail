@@ -19,7 +19,7 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <ProjectGuid>{003BAF38-EE59-46AB-A90E-46B51791CDEA}</ProjectGuid>
     <ApplicationIcon>Icons\Snake.ico</ApplicationIcon>
-    <!-- 不嵌入清单，避免 Unknown Hard Error；DPI 由 ApplicationConfiguration.Initialize 在代码中设置 -->
+    <!-- Don't embed the manifest, to avoid Unknown Hard Error; DPI is set in code by ApplicationConfiguration.Initialize -->
     <!-- <ApplicationManifest>App.manifest</ApplicationManifest> -->
     <ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
     <EnableNETAnalyzers>true</EnableNETAnalyzers>

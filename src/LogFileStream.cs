@@ -203,7 +203,7 @@ namespace SnakeTail
             get { return _fileCheckPattern; }
         }
 
-        // 当前读取器已消费到的行号，用于 UI 侧计算清屏偏移。
+        // Line number the current reader has consumed up to, used by the UI to compute the clear-screen offset.
         public int LastReadLineNumber
         {
             get { return _lastLineNumber; }
@@ -404,7 +404,7 @@ namespace SnakeTail
             return true;
         }
 
-        // 初始化文件系统监听：事件触发为主，轮询兜底。
+        // Initialize the file system watcher: event-driven first, polling as a fallback.
         void SetupFileWatcher()
         {
             DisposeFileWatcher();
@@ -445,7 +445,7 @@ namespace SnakeTail
             }
         }
 
-        // 释放监听资源，避免句柄泄漏。
+        // Release watcher resources to avoid handle leaks.
         void DisposeFileWatcher()
         {
             if (_fileWatcher == null)
@@ -461,7 +461,7 @@ namespace SnakeTail
             _fileWatcher = null;
         }
 
-        // 文件事件：仅打脏标记，避免事件线程直接做重 IO。
+        // File event: only set the dirty flag, so the event thread doesn't do heavy IO directly.
         void FileWatcher_Changed(object sender, FileSystemEventArgs e)
         {
             if (IsWatchEventMatch(_filePathAbsolute, _fileStream != null ? _fileStream.Name : null, e != null ? e.FullPath : null, _fileCheckPattern))
@@ -472,7 +472,7 @@ namespace SnakeTail
             }
         }
 
-        // 重命名事件：新旧路径任一命中都视为变化。
+        // Rename event: a match on either the old or new path counts as a change.
         void FileWatcher_Renamed(object sender, RenamedEventArgs e)
         {
             string oldPath = e != null ? e.OldFullPath : null;
@@ -486,7 +486,7 @@ namespace SnakeTail
             }
         }
 
-        // 监听错误：标记脏并让兜底轮询尽快接管。
+        // Watcher error: mark dirty and let the fallback polling take over quickly.
         void FileWatcher_Error(object sender, ErrorEventArgs e)
         {
             Interlocked.Exchange(ref _fileChangedSignal, 1);
@@ -494,7 +494,7 @@ namespace SnakeTail
                 FileChangedEvent(this, EventArgs.Empty);
         }
 
-        // 判断事件路径是否与当前跟踪目标相关。
+        // Determines whether the event path is relevant to the current tail target.
         internal static bool IsWatchEventMatch(string configuredPathAbsolute, string openedFilePath, string eventPath, bool fileCheckPattern)
         {
             if (string.IsNullOrEmpty(eventPath))
@@ -556,7 +556,7 @@ namespace SnakeTail
 
                 if (_fileReader.EndOfStream)
                 {
-                    // 事件触发优先：有变化信号时防抖检查，减少空闲轮询。
+                    // Events first: debounce the check when there's a change signal, reducing idle polling.
                     if (Interlocked.Exchange(ref _fileChangedSignal, 0) == 1)
                     {
                         if (DateTime.UtcNow.Subtract(_lastEventDrivenCheck) >= EventDrivenCheckDebounce)
@@ -569,13 +569,13 @@ namespace SnakeTail
                             Interlocked.Exchange(ref _fileChangedSignal, 1);
                         }
                     }
-                    // 兜底轮询：覆盖丢事件、网络盘延迟或监听错误场景。
+                    // Fallback polling: covers lost events, network drive delays or watcher errors.
                     else if (DateTime.UtcNow.Subtract(_lastFileCheck) >= _fileCheckFrequency)
                     {
                         CheckLogFile(false);
                     }
 
-                    // EOF 兜底：即使监听事件丢失，也尝试按文件长度重同步读取器。
+                    // EOF fallback: even if watcher events were lost, try to resync the reader by file length.
                     if (!TryResyncReaderAtEof())
                         return null;
                 }
@@ -610,7 +610,7 @@ namespace SnakeTail
         }
 
         /// <summary>
-        /// 连续扫描指定行区间，减少逐行重入开销。
+        /// Scans the given line range continuously, reducing per-line re-entry overhead.
         /// </summary>
         public int SearchTextRange(int startLineNumberInclusive, int endLineNumberExclusive, string searchText, bool matchCase, bool findLastMatch, Action<int> progressCallback)
         {
@@ -653,7 +653,7 @@ namespace SnakeTail
             return matchedLineNumber;
         }
 
-        // EOF 时按底层流长度重同步读取器，避免遗漏追加内容。
+        // At EOF, resync the reader by the underlying stream length so appended content isn't missed.
         bool TryResyncReaderAtEof()
         {
             if (_fileReader == null || _fileStream == null)

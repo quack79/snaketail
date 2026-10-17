@@ -7,7 +7,7 @@ public class DisplayTextProcessorTests
     [Fact]
     public void Processor_should_stop_when_previous_plugin_handled()
     {
-        // 验证前一个插件 Handled=true 时后续插件不执行
+        // Verify later plugins don't run when an earlier plugin returns Handled=true
         var firstPlugin = new CountingPlugin("P1", canProcess: true, handled: true, output: "first");
         var secondPlugin = new CountingPlugin("P2", canProcess: true, handled: true, output: "second");
         var processor = new DisplayTextProcessor();
@@ -27,7 +27,7 @@ public class DisplayTextProcessorTests
     [Fact]
     public void Processor_should_hit_cache_with_same_signature()
     {
-        // 验证同一行与同一插件签名下命中缓存
+        // Verify the cache is hit for the same line and the same plugin signature
         var plugin = new CountingPlugin("P1", canProcess: true, handled: true, output: "cached");
         var processor = new DisplayTextProcessor();
         processor.SetEnabledPlugins([new LoadedDisplayPlugin("A", "A", "P1", plugin, true, string.Empty)]);
@@ -39,7 +39,7 @@ public class DisplayTextProcessorTests
         Assert.Equal("cached", output2);
         Assert.Equal(1, plugin.TryProcessCallCount);
 
-        // 修改插件顺序签名后，缓存应失效并重新计算
+        // After the plugin order signature changes, the cache should be invalidated and recomputed
         processor.SetEnabledPlugins([]);
         processor.SetEnabledPlugins([new LoadedDisplayPlugin("A", "A", "P1", plugin, true, string.Empty)]);
         _ = processor.GetProcessedLineText(20, "raw");
@@ -49,7 +49,7 @@ public class DisplayTextProcessorTests
     [Fact]
     public void Processor_should_prefer_block_plugin_input_when_plugin_ordered_first()
     {
-        // 验证块插件在前时，会先收集整块并阻断后续单行插件。
+        // Verify that when a block plugin comes first, it collects the whole block first and blocks later single-line plugins.
         var blockPlugin = new BlockCollectPlugin();
         var linePlugin = new CountingPlugin("P2", canProcess: true, handled: true, output: "line");
         var processor = new DisplayTextProcessor();
@@ -79,7 +79,7 @@ public class DisplayTextProcessorTests
     [Fact]
     public void Processor_should_keep_multiline_block_output_line_by_line()
     {
-        // 验证块插件输出多行时，处理结果按原始行号一一对应缓存。
+        // Verify that when a block plugin outputs multiple lines, the results are cached one-to-one by raw line number.
         var blockPlugin = new TwoLineRewriteBlockPlugin();
         var processor = new DisplayTextProcessor();
         processor.SetEnabledPlugins(
@@ -108,7 +108,7 @@ public class DisplayTextProcessorTests
             lineKey => lines.TryGetValue(lineKey, out string? text) ? text : string.Empty);
 
         Assert.Equal("\"skills\": [", line500);
-        Assert.Equal("  10013001 龙息,", line501);
+        Assert.Equal("  10013001 Dragon Breath,", line501);
         Assert.Equal("]", line502);
         Assert.Equal(1, blockPlugin.TryProcessCallCount);
     }
@@ -132,7 +132,7 @@ public class DisplayTextProcessorTests
 
         public void Initialize(PluginContext context)
         {
-            // 测试插件无需初始化逻辑
+            // Test plugin needs no initialization logic
         }
 
         public bool CanProcess(string line)
@@ -154,7 +154,7 @@ public class DisplayTextProcessorTests
 
         public void Initialize(PluginContext context)
         {
-            // 测试插件无需初始化逻辑
+            // Test plugin needs no initialization logic
         }
 
         public bool TryCollectBlock(int lineKey, string currentLine, Func<int, string> readLineByLineKey, out string blockText)
@@ -183,7 +183,7 @@ public class DisplayTextProcessorTests
 
         public void Initialize(PluginContext context)
         {
-            // 测试插件无需初始化逻辑
+            // Test plugin needs no initialization logic
         }
 
         public bool TryCollectBlock(int lineKey, string currentLine, Func<int, string> readLineByLineKey, out string blockText)
@@ -211,7 +211,7 @@ public class DisplayTextProcessorTests
             return new PluginProcessResult
             {
                 Handled = true,
-                Output = "\"skills\": [" + Environment.NewLine + "  10013001 龙息," + Environment.NewLine + "]"
+                Output = "\"skills\": [" + Environment.NewLine + "  10013001 Dragon Breath," + Environment.NewLine + "]"
             };
         }
     }

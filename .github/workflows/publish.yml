@@ -1,4 +1,4 @@
-# 发布 SnakeTail：在打 tag 时构建并创建 GitHub Release，仅上传 portable x64 与源码 zip
+# Publish SnakeTail: on tag, build and create a GitHub Release, uploading only the portable x64 build and the source zip
 name: Publish
 
 on:
@@ -8,30 +8,30 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: '要发布的 tag（如 v1.9.8），由 Version Release 自动传入'
+        description: 'Tag to publish (e.g. v1.9.8); passed in automatically by Version Release'
         required: false
 
 jobs:
   build:
     runs-on: windows-latest
     steps:
-      - name: 检出代码
+      - name: Check out code
         uses: actions/checkout@v4
         with:
           ref: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref }}
 
-      - name: 设置 MSBuild
+      - name: Set up MSBuild
         uses: microsoft/setup-msbuild@v2
 
-      - name: 还原 NuGet 包
+      - name: Restore NuGet packages
         run: dotnet restore SnakeTail.sln
         shell: pwsh
 
-      - name: 构建 SnakeTail (portable x64)
+      - name: Build SnakeTail (portable x64)
         run: msbuild src\SnakeTail.csproj '/p:Configuration=Release;PlatformTarget=x64' '/t:Clean;Rebuild'
         shell: pwsh
 
-      - name: 定位 x64 构建输出目录
+      - name: Locate x64 build output directory
         id: outdir
         run: |
           $candidates = @(
@@ -46,20 +46,20 @@ jobs:
             }
           }
           if (-not $outDir) {
-            Write-Host "SnakeTail.exe 未找到，已检查: $($candidates -join ', ')"
-            Get-ChildItem -Path .temp\bin -Recurse -Filter 'SnakeTail.exe' -ErrorAction SilentlyContinue | ForEach-Object { Write-Host "发现: $($_.FullName)" }
+            Write-Host "SnakeTail.exe not found; checked: $($candidates -join ', ')"
+            Get-ChildItem -Path .temp\bin -Recurse -Filter 'SnakeTail.exe' -ErrorAction SilentlyContinue | ForEach-Object { Write-Host "Found: $($_.FullName)" }
             exit 1
           }
           "OUTDIR=$outDir" | Out-File -Append -FilePath $env:GITHUB_ENV -Encoding utf8
           echo "path=$outDir" >> $env:GITHUB_OUTPUT
         shell: pwsh
 
-      - name: 打包发布产物与源码
+      - name: Package release artifacts and source
         run: |
           $tag = if ($env:INPUT_TAG) { $env:INPUT_TAG } elseif ($env:GITHUB_REF -match 'refs/tags/(.+)') { $Matches[1] } else { $null }
           $version = if ($tag -match '^v(.+)$') { $Matches[1] } else { (Get-Date -Format 'yyyy.MM.dd.HHmm') }
           if (-not $env:OUTDIR -or -not (Test-Path (Join-Path $env:OUTDIR 'SnakeTail.exe'))) {
-            Write-Error "OUTDIR 未设置或无效（缺少 SnakeTail.exe），请检查上一步「定位 x64 构建输出目录」"
+            Write-Error "OUTDIR is not set or invalid (SnakeTail.exe missing); check the previous step 'Locate x64 build output directory'"
             exit 1
           }
           New-Item -ItemType Directory -Force -Path publish
@@ -71,7 +71,7 @@ jobs:
           INPUT_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || '' }}
         shell: pwsh
 
-      - name: 上传构建产物
+      - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
           name: SnakeTail-build
@@ -80,7 +80,7 @@ jobs:
             SnakeTail-*-src.zip
           if-no-files-found: error
 
-      - name: 创建 GitHub Release
+      - name: Create GitHub Release
         if: startsWith(github.ref, 'refs/tags/') || (github.event_name == 'workflow_dispatch' && inputs.tag != '')
         uses: softprops/action-gh-release@v2
         with:

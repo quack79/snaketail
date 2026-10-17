@@ -7,7 +7,7 @@ public class TailFormSearchTests
     [Fact]
     public void Text_search_should_only_use_raw_text()
     {
-        // 普通文本搜索只匹配原始日志内容。
+        // Plain text search only matches the raw log content.
         bool useProcessedText = TailForm.ShouldSearchProcessedText(lineHighlights: false);
 
         Assert.False(useProcessedText);
@@ -16,7 +16,7 @@ public class TailFormSearchTests
     [Fact]
     public void Highlight_search_should_still_use_processed_text()
     {
-        // 高亮搜索保持显示链路语义。
+        // Highlight search keeps the display pipeline semantics.
         bool useProcessedText = TailForm.ShouldSearchProcessedText(lineHighlights: true);
 
         Assert.True(useProcessedText);
